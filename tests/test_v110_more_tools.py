@@ -46,6 +46,14 @@ try:
         c=sent[-1]['messages'][-1]['content'];assert marker in c and '0912345678' not in c,(k,c[:80])
         if k=='prm': sy=sent[-1]['system']+sent[-1]['messages'][-1]['content'] if isinstance(sent[-1]['messages'][-1]['content'],str) else sent[-1]['system'];assert '提示詞開始' in sy and '不需要引用經文' in sy and '完整引用經文' not in sy
         box()
+    # guided options: multi-select chips, chips-only send
+    pg.click('.sc [data-act=close]');pg.click('#tabs [data-t=mini]');assert pg.evaluate("document.querySelector('#main .card .item').getAttribute('data-act')")=='tbopen'
+    pg.click('#main [data-act=tbopen]');pg.click('.tbg [data-k=visit]')
+    assert pg.locator('.tbog').count()==3
+    pg.click('.tbog [data-v="住院病患"]');pg.click('.tbog [data-v="長者"]');pg.click('.tbog [data-v="一起禱告"]');pg.click('.tbog [data-v="長者"]')
+    pg.click('[data-act=tbgo]');pg.wait_for_selector('#cin');pg.wait_for_function("document.querySelectorAll('.msg.a').length>=7")
+    c=sent[-1]['messages'][-1]['content'];assert '對象：住院病患' in c and '長者' not in c.split('這次的目的')[0] and '一起禱告' in c,c[:200]
+    box()
     # mini tool
     box();pg.click('[data-act=mtopen]');pg.click('[data-act=mtgo]');assert pg.locator('#mt_q').count()==1
     pg.click('[data-act=mtchip] >> nth=0');assert pg.input_value('#mt_q')

@@ -89,7 +89,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.10.6';
+var APPVER='1.10.7';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -198,6 +198,22 @@ TB.push(
 );
 TB.push(['prm','🪄','設計提示詞','說出需求 → 量身打造可貼到各種 AI 軟體的提示詞',[['need',2,'你想做出什麼？（例如：復活節主日的宣傳海報、一首給長輩的詩歌、青少年營會簡報）'],['ai',1,'想用哪個 AI 軟體（可不填，例如：ChatGPT、Claude、Midjourney、Suno、Canva）'],['ext',2,'風格、對象、尺寸、字數或其他限制（可不填）']],
  '請依使用者的需求，量身打造一份可以直接複製到 AI 軟體使用的專業提示詞（prompt）。輸出依序為：1.【需求判斷】一兩句：要做的產品類型，以及最適合的 AI 軟體（使用者已指定平台就照他的，沒指定就推薦 1–2 個並說理由）。2.【提示詞】用「===提示詞開始===」與「===提示詞結束===」包起來，中間是完整、可直接貼上的內容；結構清楚：角色、任務與目的、背景與對象、內容與風格要求、輸出格式與長度、限制與避免事項、完成前自我檢查。依平台調整寫法：文字類（ChatGPT、Claude、Gemini）用條理清楚的中文提示詞；圖像類（Midjourney、DALL·E、Ideogram 等）寫英文提示詞，含主體、構圖、光線、風格、色調、比例，並附中文對照；音樂類（Suno 等）給風格標籤與歌詞段落結構；影片類（Sora、可靈、Runway 等）給分鏡、鏡頭與時長；簡報、網頁、程式類寫清楚頁數或功能、資料與驗收標準。需要使用者補充的地方用【請填：…】標示，不替使用者編造資料。3.【使用小技巧】2–3 點：如何貼上、如何追問微調、可替換的變數。4.若使用者沒指定平台，再附一版較短的通用版。提示詞內不要放會友姓名或個資；各平台的參數與語法會更新，請提醒以該平台當前說明為準。',1,2600]);
+var TBO={
+visit:[['kind','對象',['住院病患','在家養病','長者','久未聚會','新朋友','喪親者','家庭或關係緊張','失業或經濟壓力','初信者']],['goal','這次的目的',['關心問候','一起禱告','安慰陪伴','分享經文','了解需要','邀請回到聚會','領受聖餐']],['way','探訪方式',['親自到訪','電話','視訊','訊息']]],
+evan:[['who','對象',['同事','家人','朋友','鄰居','慕道友','曾信主後離開']],['hook','切入點',['人生困難','家庭','工作壓力','健康','人生意義','對基督教的疑問','生死問題']],['mode','談話方式',['輕鬆聊天','分享見證','解答疑問','邀請參加聚會','不施壓地邀請回應']]],
+serm:[['occ','場合',['主日講道','週間聚會','小組','青少年','兒童','長輩','特別節期']],['len','篇幅',['10 分鐘','20 分鐘','30 分鐘','40 分鐘']],['type','講章類型',['逐節解經','主題式','敘事','生命見證','福音性']],['focus','重點方向',['認識神','生命更新','服事','家庭','禱告','盼望','謙卑無己']]],
+grp:[['who','對象',['青少年','青年','夫妻','長輩','新朋友','職場','婦女','男士']],['m','時間',['45 分鐘','60 分鐘','90 分鐘']],['fmt','形式',['查經','分享見證','禱告會','破冰活動','生活操練']]],
+letter:[['kind','信的種類',['代禱信','感謝信','關懷信','邀請信','勉勵信','和好信']],['to','寫給',['會友','同工','宣教士','奉獻者','社區鄰舍']],['tone','語氣',['溫暖','正式','簡短','親切口語']]],
+wed:[['mood','氣氛',['溫馨','莊重','幽默輕鬆','感動']],['part','內容',['祝福','勉勵','見證故事','經文','禱告']],['len','篇幅',['3 分鐘','5 分鐘','8 分鐘']]],
+fun:[['occ','場合',['告別禮拜','追思會','家祭','墓前']],['len','篇幅',['3 分鐘','5 分鐘','8 分鐘']],['focus','重點',['盼望與永生','安慰家屬','感念生平','見證信仰','福音']]],
+song:[['use','用途',['小家敬拜','主日','兒童','長輩','青少年','禱告','感恩','節期']],['style','曲風',['抒情慢板','輕快','民謠','流行','傳統詩歌','輕音樂']],['out','要的內容',['歌詞','和弦','Suno 提示詞']]],
+week:[['ver','版面',['一頁簡明','完整版','社群貼文版']],['part','要有的內容',['報告事項','代禱事項','感謝','牧者的話','本週經文','下週預告']],['tone','語氣',['莊重','溫暖']]],
+pshort:[['use','用途',['週報牧者的話','平安信','社群貼文','小組分享','聚會前預告']],['aud','對象',['全教會','長輩','青年','新朋友','病患','喪親者']],['len','字數',['200 字','400 字','600 字']]],
+devo:[['occ','場合',['晨更','睡前','給新朋友','給病患','小組開場']],['focus','重點',['安慰','盼望','順服','謙卑無己','感恩','禱告','饒恕']],['len','字數',['200 字','400 字','600 字']]],
+plan:[['kind','類型',['聚會','營會','培訓','福音事工','關懷事工','年度計畫','節期活動']],['per','期間',['一個月','一季','半年','一年']],['scale','規模',['小組','全教會','跨堂會']]],
+fin:[['kind','報表類型',['月報','季報','年度','專案或活動']],['show','要呈現',['收支總表','與上期比較','各項占比']]],
+prm:[['prod','要做的產品',['海報','簡報','影片','詩歌','文章','圖卡','網頁小工具','講稿','繪本']],['ai','AI 軟體',['ChatGPT','Claude','Gemini','Midjourney','DALL·E','Suno','Canva','Sora／可靈']],['use','用途',['宣傳','教學','敬拜','關懷','分享']],['style','風格',['溫暖','莊重','簡潔','活潑','兒童','插畫','寫實']]]
+};
 var TBM2=' 請用繁體中文說明，提示詞本身依平台需要可用英文。這是工具型任務，不需要引用經文，也不必加入靈修用語，保持專業實用、條理清楚。';
 var TBM=' 請與使用者用同一種語言寫作，完整引用經文並寫出出處（和合本），不確定的經文直說不確定。對話中的「會友甲、乙…」是代號，請原樣使用。適合處自然融入 321 理念（耶穌是榜樣、聖經是準則、聖靈是引導；讓耶穌作王、榮耀歸神）。用清楚的小標題與條列。';
 (function(){var i,t;for(i=0;i<TB.length;i++){t=TB[i];CMDS['工具'+t[0]]={p:t[5]+(t[0]==='prm'?TBM2:TBM)+'\n使用者提供的資料：',m:t[6],t:t[7],tb:1};}})();
@@ -207,13 +223,16 @@ function tbHtml(){var o='<div class="sm">選一個工具，填幾個重點，小
  o+='<button data-act="mzopen"><span>✍️</span><b>背經默寫批改</b><small>📷 拍下默寫，對照和合本逐字批改</small></button><button data-act="lgopen"><span>📜</span><b>長篇講章逐字稿</b><small>20–40 分鐘，先大綱再逐段寫全文</small></button><button data-act="slopen"><span>📽</span><b>製作投影片</b><small>內容或主題 → 16:9 簡報檔（.pptx）</small></button><button data-act="cdopen"><span>🎨</span><b>製作卡片</b><small>生日、節期、慰問卡，可分享圖片</small></button><button data-act="mtopen"><span>🧩</span><b>做成小工具</b><small>一句話描述 → 能用的網頁小工具</small></button></div>';
  var a=styleAct();return o+'<div style="margin-top:.2rem">'+btn('stylist','✍️ 我的寫作風格'+(a?'（使用中：'+esc(a.name)+'）':'')+' ›','blk')+'</div>';}
 function tbForm(k){var t=null,i,f,o;for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB[i];if(!t)return;
- o='<div class="sm">'+esc(t[3])+'</div>';
+ o='<div class="sm">'+esc(t[3])+'</div>';var og=TBO[k]||[],gi,oi;
+ if(og.length){o+='<div class="note">先點選項（可多選，也可略過），再補幾句：</div>';for(gi=0;gi<og.length;gi++){o+='<div class="tbog" data-g="'+gi+'"><div class="sm" style="margin-top:.4rem"><b>'+esc(og[gi][1])+'</b></div><div class="row" style="flex-wrap:wrap;gap:.35rem;margin-top:.2rem">';for(oi=0;oi<og[gi][2].length;oi++)o+=btn('tbopt',og[gi][2][oi],'sm2','data-v="'+esc(og[gi][2][oi])+'"');o+='</div></div>';}}
  for(i=0;i<t[4].length;i++){f=t[4][i];o+='<div class="fld"><label for="tb_'+f[0]+'">'+esc(f[2])+'</label>'+(f[1]===2?'<textarea id="tb_'+f[0]+'" rows="4"></textarea>':'<input id="tb_'+f[0]+'">')+'</div>';}
  var sa=styleAct();o+=(sa?'<div class="note">✍️ 用我的寫作風格：'+esc(sa.name)+'</div>':'')+'<div class="note">會友姓名會在送出前自動換成代號；請勿填身分證號、電話、住址。</div><div class="row" style="margin-top:.8rem">'+btn('tbgo','請小智產出','pri sm2','data-k="'+k+'"')+' '+btn('tbopen','‹ 回工具箱','sm2')+'</div>';
  openSheet(t[1]+' '+esc(t[2]),o);}
 function tbSend(k){var t=null,i,f,v,lines=[],first='';for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB[i];if(!t||busy)return;
  for(i=0;i<t[4].length;i++){f=t[4][i];v=($('tb_'+f[0])||{value:''}).value.trim();if(i===0)first=v;if(v)lines.push('・'+f[2].replace(/（[^）]*）/g,'')+'：'+v);}
- if(!first){toast('請至少填第一欄');return;}
+ var og=TBO[k]||[],gi,sel,gs=document.querySelectorAll('#sheet .tbog'),nsel=0;
+ for(gi=0;gi<og.length&&gi<gs.length;gi++){sel=[].map.call(gs[gi].querySelectorAll('button.pri'),function(b){return b.getAttribute('data-v');});if(sel.length){nsel+=sel.length;lines.unshift('・'+og[gi][1]+'：'+sel.join('、'));}}
+ if(!first&&!nsel){toast('請至少選一個選項，或填第一欄');return;}
  if(!SET.ai){closeSheet();V={tab:'chat',sub:null,id:null};render();toast('請先在小智頁啟用小智');return;}
  var body=lines.join('\n');PENDTOOL={r:'u',t:t[1]+' '+t[2]+'\n'+body,cmd:'工具'+k,a:body};
  if(SET.pv!==false){pvOpen(body);return;}
@@ -695,8 +714,8 @@ function todayAdmin(){var t=today(),w=addDays(7),o='',i,j,m,d,list=[];
  if(du.length){o+='<h2>本週服事</h2><div class="card">';for(i=0;i<du.length&&i<6;i++)o+='<div class="item"><div class="grow"><div class="t">'+esc(du[i].role)+(du[i].mid?'・'+esc(pname2(du[i].mid)):'')+'</div><div class="sm">'+du[i].date+'</div></div></div>';o+='</div>';}
  return o;}
 function vMini(){var o='<h1>事工</h1><div class="sub">關鍵時刻的流程卡：先穩住自己，再陪伴對方。</div><div class="card">',i,c;
+ o+='<div class="item clk" data-act="tbopen"><div class="big">🧰</div><div class="grow"><div class="t">牧養工具箱</div><div class="sm">二十個工具：先點選項，再補幾句，小智量身預備</div></div></div>';
  for(i=0;i<CARDS.length;i++){c=CARDS[i];o+='<div class="item clk" data-act="flow" data-id="'+c.id+'"><div class="big">'+c.ic+'</div><div class="grow"><div class="t">'+esc(c.t)+'</div><div class="sm">'+esc(c.goal)+'</div></div></div>';}
- o+='<div class="item clk" data-act="tbopen"><div class="big">🧰</div><div class="grow"><div class="t">牧養工具箱</div><div class="sm">探訪、談道、講章、小組、代禱信、婚禮、追思，交給小智預備</div></div></div>';
  return o+'</div>'+sermonList()+adminLists();}
 function vFlow(){var c=null,i;for(i=0;i<CARDS.length;i++)if(CARDS[i].id===V.id)c=CARDS[i];if(!c){V.sub=null;return vMini();}
  var o='<div class="row"><button class="b sm2" data-act="back">← 返回</button></div><h1>'+c.ic+' '+esc(c.t)+'</h1><div class="sub">'+esc(c.goal)+'</div>';
@@ -984,7 +1003,7 @@ cdwrite:function(){cdRead();var T=null,i;for(i=0;i<CDT.length;i++)if(CDT[i][0]==
   if(!t){toast('寫不出來，請再試一次');return;}CD.txt=unlabel(t).replace(/奉[主]?耶穌[基督]*的名[禱祈][告求]*[，,、]?\s*/g,'');if($('cdmk'))cdSheet();});},
 cdshare:function(){cdRead();cdDraw();cdBlob(function(b){if(!b){toast('圖片產生失敗');return;}fileOut(b,safeName('卡片','.png'));});},
 cddl:function(){cdRead();cdDraw();cdBlob(function(b){if(!b){toast('圖片產生失敗');return;}dlBlob(b,safeName('卡片','.png'));});},
-tbopen:function(){openSheet('🧰 牧養工具箱',tbHtml());},tbtool:function(el){tbForm(el.getAttribute('data-k'));},tbgo:function(el){tbSend(el.getAttribute('data-k'));},chip:function(el){var ta=$('cin');ta.value='/'+el.getAttribute('data-c')+' ';draft=ta.value;ta.focus();},
+tbopen:function(){openSheet('🧰 牧養工具箱',tbHtml());},tbopt:function(el){el.className=/\bpri\b/.test(el.className)?el.className.replace(/\bpri\s*/,''):'pri '+el.className;},tbtool:function(el){tbForm(el.getAttribute('data-k'));},tbgo:function(el){tbSend(el.getAttribute('data-k'));},chip:function(el){var ta=$('cin');ta.value='/'+el.getAttribute('data-c')+' ';draft=ta.value;ta.focus();},
 send:function(){sendChat();},
 clrchat:function(){if(!confirm('清除所有對話？'))return;D.chat=[];save();render();},
 copy:function(el){var m=D.chat[+el.getAttribute('data-i')];if(!m)return;var t=m.t;
