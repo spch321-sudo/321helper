@@ -15,7 +15,8 @@ try:
     pg.goto('http://localhost:8774/index.html')
     pg.fill('#pw1','pastor123');pg.fill('#pw2','pastor123');pg.check('#ack');pg.click('[data-act=setup]');pg.wait_for_selector('.sc');pg.click('.sc [data-act=close]')
     pg.click('#tabs [data-t=chat]');pg.click('[data-act=aion]');pg.wait_for_selector('#cin')
-    pg.click('[data-act=tbopen]');pg.wait_for_selector('.tbg')
+    assert pg.locator('.cmds [data-act=tbopen]').count()==0
+    pg.click('#tabs [data-t=mini]');pg.click('#main [data-act=tbopen]');pg.wait_for_selector('.tbg')
     assert pg.locator('.tbg button').count()==7
     for x in ['探訪預備','傳福音談道預備','講章大綱','小組帶領單','代禱信／感謝信','婚禮祝福','追思致詞']:assert x in pg.inner_text('.tbg'),x
     pg.screenshot(path='/tmp/toolbox.png')
@@ -24,7 +25,7 @@ try:
     pg.fill('#tb_who','林姊妹 70歲 電話0912345678');pg.fill('#tb_sit','剛出院，心情低落')
     pg.click('[data-act=tbgo]');pg.wait_for_selector('.pv')            # preview sheet (de-id) is default on
     assert '0912345678' not in pg.inner_text('.pv') and '剛出院' in pg.inner_text('.pv')
-    pg.click('[data-act=pvgo]');pg.wait_for_selector('.msg.a:has-text("先傾聽")',timeout=10000)
+    pg.click('[data-act=pvgo]');pg.wait_for_selector('.msg.a:has-text("先傾聽")',timeout=10000);assert pg.locator('#cin').count()==1   # jumped to chat tab
     c=sent[0]['messages'][0]['content']
     assert '預備一次牧養探訪' in c and '剛出院' in c and '0912345678' not in c,c[:200]
     assert sent[0]['model']=='claude-sonnet-5-5'
@@ -33,8 +34,8 @@ try:
     pg.fill('#cin','/代禱 一位家人');pg.click('[data-act=send]');pg.wait_for_selector('.pv');pg.click('[data-act=pvgo]')
     pg.wait_for_function("document.querySelectorAll('.msg.a').length>=2");assert '預備一次牧養探訪' not in sent[1]['messages'][-1]['content']
     # cancel via 回去修改 must not leak into next send
-    pg.click('[data-act=tbopen]');pg.click('.tbg [data-k=wed]');pg.fill('#tb_c','小明與小美');pg.click('[data-act=tbgo]');pg.wait_for_selector('.pv');pg.click('.pv ~ .row [data-act=close], .sc .row [data-act=close]')
-    pg.fill('#cin','你好');pg.click('[data-act=send]');pg.wait_for_selector('.pv');pg.click('[data-act=pvgo]')
+    pg.click('#tabs [data-t=mini]');pg.click('#main [data-act=tbopen]');pg.click('.tbg [data-k=wed]');pg.fill('#tb_c','小明與小美');pg.click('[data-act=tbgo]');pg.wait_for_selector('.pv');pg.click('.pv ~ .row [data-act=close], .sc .row [data-act=close]')
+    pg.click('#tabs [data-t=chat]');pg.fill('#cin','你好');pg.click('[data-act=send]');pg.wait_for_selector('.pv');pg.click('[data-act=pvgo]')
     pg.wait_for_function("document.querySelectorAll('.msg.a').length>=3");assert '婚禮' not in sent[-1]['messages'][-1]['content'],sent[-1]['messages'][-1]['content']
     b.close()
 finally: srv.terminate()

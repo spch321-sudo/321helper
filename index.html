@@ -87,7 +87,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.8.0';
+var APPVER='1.8.1';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -194,6 +194,7 @@ function tbForm(k){var t=null,i,f,o;for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB
 function tbSend(k){var t=null,i,f,v,lines=[],first='';for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB[i];if(!t||busy)return;
  for(i=0;i<t[4].length;i++){f=t[4][i];v=($('tb_'+f[0])||{value:''}).value.trim();if(i===0)first=v;if(v)lines.push('・'+f[2].replace(/（[^）]*）/g,'')+'：'+v);}
  if(!first){toast('請至少填第一欄');return;}
+ if(!SET.ai){closeSheet();V={tab:'chat',sub:null,id:null};render();toast('請先在小智頁啟用小智');return;}
  var body=lines.join('\n');PENDTOOL={r:'u',t:t[1]+' '+t[2]+'\n'+body,cmd:'工具'+k,a:body};
  if(SET.pv!==false){pvOpen(body);return;}
  closeSheet();sendChat(true);}
@@ -421,6 +422,7 @@ function todayAdmin(){var t=today(),w=addDays(7),o='',i,j,m,d,list=[];
  return o;}
 function vMini(){var o='<h1>事工</h1><div class="sub">關鍵時刻的流程卡：先穩住自己，再陪伴對方。</div><div class="card">',i,c;
  for(i=0;i<CARDS.length;i++){c=CARDS[i];o+='<div class="item clk" data-act="flow" data-id="'+c.id+'"><div class="big">'+c.ic+'</div><div class="grow"><div class="t">'+esc(c.t)+'</div><div class="sm">'+esc(c.goal)+'</div></div></div>';}
+ o+='<div class="item clk" data-act="tbopen"><div class="big">🧰</div><div class="grow"><div class="t">牧養工具箱</div><div class="sm">探訪、談道、講章、小組、代禱信、婚禮、追思，交給小智預備</div></div></div>';
  return o+'</div>'+sermonList()+adminLists();}
 function vFlow(){var c=null,i;for(i=0;i<CARDS.length;i++)if(CARDS[i].id===V.id)c=CARDS[i];if(!c){V.sub=null;return vMini();}
  var o='<div class="row"><button class="b sm2" data-act="back">← 返回</button></div><h1>'+c.ic+' '+esc(c.t)+'</h1><div class="sub">'+esc(c.goal)+'</div>';
@@ -432,7 +434,7 @@ function vFlow(){var c=null,i;for(i=0;i<CARDS.length;i++)if(CARDS[i].id===V.id)c
  o+='<div class="note">經文取自和合本，使用前請對照聖經核對。</div><div style="margin-top:1rem">'+btn('askai','請小智協助這個情境','pri blk','data-cmd="'+esc(c.cmd+c.t)+'"')+'</div>';return o;}
 function vChat(){if(!SET.ai){return '<h1>小智</h1><div class="card"><b>啟用小智之前，請先了解：</b><div class="sub" style="margin-top:.5rem">• 您輸入的文字會經由團契的中繼伺服器，送到 Anthropic 的 Claude 處理。<br>• 送出前，App 會把已建檔會友的姓名與稱呼換成「會友甲」等代號，並移除電話、電子郵件、網址與長串數字。<br>• 這不是萬無一失：請勿輸入身分證號、密碼，或足以辨認個人的詳細情節。<br>• 小智不會自動傳訊息給任何人，所有草稿都由您修改後自行送出。<br>• 小智是 AI，引用的經文與資料可能有誤，請務必核對。<br>• 對話紀錄只存在本機並加密。</div></div>'+btn('aion','我了解，啟用小智','pri blk');}
  var o='<div class="row"><h1 class="grow">小智</h1>'+btn('clrchat','清除對話','sm2')+'</div><div class="msgs" id="msgs">'+msgsHtml()+'</div>';
- o+='<div class="cbar"><div class="cmds">';var k;for(k in CMDS)if(!CMDS[k].tb)o+=btn('chip','/'+k,'sm2','data-c="'+k+'"');o+=btn('tbopen','🧰 工具箱','sm2');
+ o+='<div class="cbar"><div class="cmds">';var k;for(k in CMDS)if(!CMDS[k].tb)o+=btn('chip','/'+k,'sm2','data-c="'+k+'"');
  o+='</div><textarea id="cin" rows="2" placeholder="輸入問題，或點上面的指令…（會友姓名會自動換成代號）">'+esc(draft)+'</textarea><div style="margin-top:.4rem">'+btn('send','送出','pri blk')+'</div></div>';return o;}
 function md(s){s=esc(s);var L=s.split('\n'),o='',i,x,r;
  for(i=0;i<L.length;i++){x=L[i];r=null;
@@ -569,7 +571,7 @@ function sendChat(go){if(busy)return;var tm=null,ta=$('cin'),txt=ta?ta.value.tri
  if(!tm&&go!==true&&SET.pv!==false){var rr=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt);if(rr&&!(rr[2]||'').trim()){toast('請在指令後面寫上情況');return;}pvOpen(txt);return;}
  var r=tm?null:/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt),m=tm||{r:'u',t:txt};
  if(r){m.cmd=r[1];m.a=r[2]||'';if(!m.a.trim()){toast('請在指令後面寫上情況');return;}}
- m.n=deid(m.cmd?m.a:m.t).n;D.chat.push(m);if(!tm)draft='';
+ m.n=deid(m.cmd?m.a:m.t).n;D.chat.push(m);if(!tm)draft='';if(tm&&V.tab!=='chat'){V={tab:'chat',sub:null,id:null};render();}
  if(CRISIS_RE.test(txt))D.chat.push({r:'a',crisis:true});if(ABUSE_RE.test(txt))D.chat.push({r:'a',crisis:'abuse'});
  var ph={r:'a',pending:true};D.chat.push(ph);busy=true;save();paintChat(true);
  var model=(m.cmd&&CMDS[m.cmd].m)?(SET.mDeep||M_DEEP):(SET.mFast||M_FAST),max=m.cmd?CMDS[m.cmd].t:1200,base=buildMsgs(),msgs=base,acc='',cont=0;
