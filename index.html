@@ -85,7 +85,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.5.0';
+var APPVER='1.6.0';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -94,6 +94,34 @@ var TABS=[['today','今日','☀️'],['flock','羊群','🐑'],['mini','事工'
 var CATS=['新朋友','慕道友','會友','同工','長輩','青少年','兒童','其他'];
 var RHY=[[0,'預設（約每月）'],[7,'每週'],[14,'每兩週'],[30,'每月'],[60,'每兩個月'],[90,'每季'],[-1,'不提醒']];
 function rhyName(v){for(var i=0;i<RHY.length;i++)if(RHY[i][0]===(+v||0))return RHY[i][1];return '';}
+var EXQ=['今天我在哪裡離開了本位、想抓住權力？','今天我讓耶穌在哪件事上作王？','今天要把什麼榮耀歸給耶穌？'];
+var BOQ=['這一週睡眠或休息明顯不足','對探訪或關懷感到厭煩、麻木','覺得沒有人可以分擔我的重擔','超過一週沒有好好與主獨處','常對羊群或家人不耐煩'];
+var PRE='主耶穌，求你在這次相遇中作王；我放下自己，只做你要我做的。';
+var PETER='務要牧養在你們中間神的群羊，按著神旨意照管他們；不是出於勉強，乃是出於甘心；也不是因為貪財，乃是出於樂意；也不是轄制所託付你們的，乃是作群羊的榜樣。（彼得前書 5:2-3，和合本）';
+function exq(i){return (SET.exq&&SET.exq[i])||EXQ[i];}
+function pre(){return SET.pre||PRE;}
+function wk(){var d=new Date(),k=(d.getDay()+6)%7;d.setDate(d.getDate()-k);return ymd(d);}
+function secH(a,b){return '<div style="margin:1.3rem 0 .2rem;padding-top:.4rem;border-top:2px solid var(--gold)"><b>'+a+'</b><span class="sm">　'+b+'</span></div>';}
+function dayRec(t){if(!D.days[t])D.days[t]={};return D.days[t];}
+function examCard(t){var d=D.days[t]||{},e=d.ex||['','',''],o='<div class="card"><b>無己省察</b><div class="sub">一分鐘就好；只存在這支手機，不會送給小智。</div>',i;
+ for(i=0;i<3;i++)o+='<label class="f" for="ex'+i+'">'+esc(exq(i))+'</label><textarea id="ex'+i+'" rows="2" onchange="window.PCA.ex('+i+',this.value)">'+esc(e[i]||'')+'</textarea>';
+ return o+'<div style="margin-top:.5rem">'+btn('exhist','回顧最近的省察','sm2')+'</div></div>';}
+function soulCard(t){var sl=D.soul,w=wk(),o='<div class="card"><b>牧者自己的靈魂</b>',last=sl.bo.length?sl.bo[sl.bo.length-1]:null;
+ o+='<label class="chk" style="margin-top:.4rem"><input type="checkbox" data-act="sab"'+(sl.sab[w]?' checked':'')+'><span>本週已守安息（真正休息）</span></label>';
+ if(sl.peer&&getM(sl.peer)){o+='<div class="sm" style="margin-top:.4rem">屬靈同伴：'+esc(mname(sl.peer))+'・'+(sl.peerAt?'上次聯絡 '+ago(sl.peerAt):'尚未記錄聯絡')+'</div>'+((!sl.peerAt||dd(t,sl.peerAt)>=14)?'<div class="sm warn">已超過兩週，找他聊聊、彼此代禱吧。</div>':'')+'<div>'+btn('peerdone','今天已聯絡','sm2')+' '+btn('peerset','更換','sm2')+'</div>';}
+ else o+='<div class="sm" style="margin-top:.4rem">還沒有設定屬靈同伴（235 的「2」）。</div><div>'+btn('peerset','設定屬靈同伴','sm2')+'</div>';
+ o+='<div style="margin-top:.4rem">'+btn('bo',last?'每週自評（上次 '+ago(last.date)+'）':'每週自評','sm2')+'</div><div class="note">'+esc(PETER)+'</div></div>';return o;}
+function lastOpenPrayer(mid){for(var i=D.prayers.length-1;i>=0;i--)if(D.prayers[i].mid===mid&&!D.prayers[i].ans)return D.prayers[i].text;return '';}
+function prayWheel(t){var n=D.members.length;if(!n)return '';var a=D.members.slice().sort(function(x,y){return x.created===y.created?(x.id<y.id?-1:1):((x.created||'')<(y.created||'')?-1:1);}),k=Math.min(3,n),st=(doy()*3)%n,pd=(D.days[t]&&D.days[t].pr)||[],o='<h2>今日代禱輪</h2><div class="card"><div class="sub">每天輪流為 '+k+' 位代禱，一輪下來每個人都被記念。</div>',i,m,pr;
+ for(i=0;i<k;i++){m=a[(st+i)%n];pr=lastOpenPrayer(m.id);o+='<label class="step"><input type="checkbox" data-act="pwheel" data-id="'+m.id+'"'+(pd.indexOf(m.id)>=0?' checked':'')+'><span>'+esc(m.name)+(pr?'<span class="sm">・'+esc(pr.slice(0,30))+'</span>':'')+'</span></label>';}
+ return o+'</div>';}
+function exHist(){var ks=Object.keys(D.days).filter(function(k){var e=D.days[k].ex;return e&&(e[0]||e[1]||e[2]);}).sort().reverse().slice(0,14),o='',i,e,j;
+ if(!ks.length)o='<div class="sub">還沒有省察紀錄。</div>';
+ for(i=0;i<ks.length;i++){e=D.days[ks[i]].ex;o+='<div class="card"><div class="sm">'+fmtDate(ks[i])+'</div>';for(j=0;j<3;j++)if(e[j])o+='<div class="sm" style="margin-top:.3rem">'+esc(exq(j))+'</div><div style="white-space:pre-wrap">'+esc(e[j])+'</div>';o+='</div>';}
+ openSheet('最近的省察',o);}
+function boSheet(){var o='<div class="sm">這只是自我提醒，不是診斷，不會送給小智。請誠實勾選這一週的情況。</div>',i;for(i=0;i<BOQ.length;i++)o+='<label class="step"><input type="checkbox" id="bo'+i+'"><span>'+esc(BOQ[i])+'</span></label>';
+ openSheet('每週自評',o+'<div style="margin-top:1rem">'+btn('bosave','完成','pri blk')+'</div>');}
+function peerSheet(){openSheet('屬靈同伴','<div class="sm">選一位與你彼此扶持、禱告的人（需已在羊群名單中）。</div>'+fld('pe_m','屬靈同伴','<select id="pe_m">'+memberOpts(D.soul.peer||'',1)+'</select>')+'<div style="margin-top:1rem">'+btn('peersave','儲存','pri blk')+'</div>');}
 var GB='';
 var CTYPES=['探訪','電話','訊息','見面','代禱','其他'];
 var LINES=['讓耶穌作王，讓耶穌得著一切的榮耀。','謙卑是放下權力，回到本位。','先生命，再關係，後事工。','人比事重要，關係比東西重要。','無己，才能合一；無己，才能得勝。','耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導。','焦點在耶穌，不在自己，不在別人，不在環境。','用心靠聖靈，不要用腦靠自己。','改變從我開始。','不是我自己活，乃是基督在我裡面活。'];
@@ -135,7 +163,7 @@ var CMDS={'探訪':{p:'請協助牧者預備一次探訪，依序給：1.探訪�
 '會議':{p:'請擬一份會議議程草稿：時間分配、討論事項、決議事項欄位、禱告開始與結束，並提醒可能的張力點。會議主題與人數：',m:0,t:900},
 '會記':{p:'請把以下會議紀錄整理成：1.重點摘要 2.決議事項（附建議負責人與期限，標明為建議）3.待追蹤事項 4.下次會議建議議題。不確定的地方標明，不要補寫未提到的內容。紀錄：',m:0,t:1200},
 '講綱':{p:'請提供一份講道大綱：主題句、三個要點（各附經文與一句應用）、一個比喻或例子、結語與呼召。忠於經文脈絡，不確定處標明。經文或主題：',m:1,t:1800}};
-var SYS='你是「小智」，台灣貴格會一位牧者的牧會助理。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。格式：短標題與條列，不用表格與程式碼。';
+var SYS='你是「小智」，台灣貴格會一位牧者的牧會助理。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。不替聖靈說話，不保證神的旨意。行政、公文、法規與會議類內容保持專業語氣，不插入靈修用語；321理念只在牧養與勸勉類回覆中自然出現。格式：短標題與條列，不用表格與程式碼。';
 var CRISIS_RE=/自殺|輕生|不想活|想死|結束生命|了結自己|活不下去|傷害自己|自傷|割腕|跳樓|尋短|不想活了|活著沒意思|活著沒有意思|想消失|不如死了|一了百了|吞藥|燒炭|上吊|跳海|了斷|suicid|kill myself|end my life|want to die|self-harm/i;
 var ABUSE_RE=/家暴|毆打|性侵|性騷擾|猥褻|虐待|施暴|暴力相向|亂倫|兒虐|被打得|身上有傷|abuse|rape/i;
 var HOT2='<div class="sm">台灣：113 保護專線（家暴、性侵、兒少保護，24小時）／110（報警，立即危險）／119</div>';
@@ -194,8 +222,8 @@ function decVault(raw,pw){var o=JSON.parse(raw),salt=s2b(o.salt),it=+o.it||15000
  return deriveKey(pw,salt,it).then(function(k){return crypto.subtle.decrypt({name:'AES-GCM',iv:s2b(o.iv)},k,s2b(o.ct)).then(function(pt){return {k:k,salt:salt,it:it,d:JSON.parse(new TextDecoder().decode(pt))};});});}
 function save(){if(!D||!KEY)return;clearTimeout(saveT);saveT=setTimeout(flush,120);}
 function flush(){clearTimeout(saveT);return (D&&KEY)?encData():Promise.resolve();}
-function defData(){return {v:1,members:[],cares:[],prayers:[],days:{},chat:[],sermons:[],meetings:[],duties:[],set:{pname:''}};}
-function fixData(d){var k,def=defData();for(k in def)if(d[k]==null)d[k]=def[k];if(!d.set)d.set={pname:''};return d;}
+function defData(){return {v:1,members:[],cares:[],prayers:[],days:{},chat:[],sermons:[],meetings:[],duties:[],soul:{sab:{},bo:[],peer:'',peerAt:''},set:{pname:''}};}
+function fixData(d){var k,def=defData();for(k in def)if(d[k]==null)d[k]=def[k];if(!d.set)d.set={pname:''};if(!d.soul.sab)d.soul.sab={};if(!d.soul.bo)d.soul.bo=[];return d;}
 
 /* ---------- lock ---------- */
 function lockNow(){var p=flush();SHOWN={};p.then(function(){D=null;KEY=null;SALT=null;V={tab:'today',sub:null,id:null};draft='';closeSheet();
@@ -232,18 +260,18 @@ function openSheet(title,body){var s=$('sheet');s.innerHTML='<div class="sc"><di
 function closeSheet(){var s=$('sheet');s.className='sheet';s.innerHTML='';}
 function memberSheet(id){var m=id?getM(id):{};
  openSheet(id?'編輯會友':'新增會友',fld('f_name','姓名（必填）','<input id="f_name" value="'+esc(m.name||'')+'">')+fld('f_nick','稱呼（選填）','<input id="f_nick" value="'+esc(m.nick||'')+'">')+
- fld('f_cat','類別','<select id="f_cat">'+opts(CATS,m.cat||'會友')+'</select>')+fld('f_grp','小組／家庭','<input id="f_grp" value="'+esc(m.grp||'')+'">')+fld('f_fam','家庭（同一家人填同一名稱，例如 王家）','<input id="f_fam" value="'+esc(m.fam||'')+'">')+fld('f_role','職務／服事（同工填寫）','<input id="f_role" value="'+esc(m.role||'')+'">')+fld('f_rhy','關懷節奏（多久想問候一次）','<select id="f_rhy">'+RHY.map(function(r){return '<option value="'+r[0]+'"'+(r[0]===(+m.rhy||0)?' selected':'')+'>'+r[1]+'</option>';}).join('')+'</select>')+
+ fld('f_cat','類別','<select id="f_cat">'+opts(CATS,m.cat||'會友')+'</select>')+fld('f_grp','小組／家庭','<input id="f_grp" value="'+esc(m.grp||'')+'">')+fld('f_fam','家庭（同一家人填同一名稱，例如 王家）','<input id="f_fam" value="'+esc(m.fam||'')+'">')+fld('f_role','職務／服事（同工填寫）','<input id="f_role" value="'+esc(m.role||'')+'">')+fld('f_235','235 關係（選填）','<select id="f_235"><option value="">不填</option>'+['屬靈同伴','屬靈父母兒女','屬靈戰友'].map(function(x){return '<option'+(x===m.t235?' selected':'')+'>'+x+'</option>';}).join('')+'</select><label class="chk" style="margin-top:.3rem"><input id="f_235c" type="checkbox"'+(m.c235?' checked':'')+'><span class="sm">已徵得當事人同意記錄這個關係。僅用來看連結，不是屬靈程度的排名。</span></label>')+fld('f_rhy','關懷節奏（多久想問候一次）','<select id="f_rhy">'+RHY.map(function(r){return '<option value="'+r[0]+'"'+(r[0]===(+m.rhy||0)?' selected':'')+'>'+r[1]+'</option>';}).join('')+'</select>')+
  fld('f_bd','生日','<input id="f_bd" type="date" value="'+esc(m.bd||'')+'">')+fld('f_ph','電話（只存在本機，不會送給小智）','<input id="f_ph" type="tel" value="'+esc(m.ph||'')+'">')+
  fld('f_nt','備註','<textarea id="f_nt" rows="3">'+esc(m.nt||'')+'</textarea>')+'<div style="margin-top:1rem">'+btn('savem','儲存','pri blk','data-id="'+(id||'')+'"')+'</div>');}
 function memberOpts(sel,none){var o=none?'<option value="">（不指定）</option>':'';var a=D.members.slice().sort(function(x,y){return x.name<y.name?-1:1;});
  for(var i=0;i<a.length;i++)o+='<option value="'+a[i].id+'"'+(a[i].id===sel?' selected':'')+'>'+esc(a[i].name)+'</option>';return o;}
 function riskSheet(k){openSheet('請優先關心這位',riskCard(k)+'<div class="sm">已將這筆紀錄標為敏感，並（若未填）設定明天跟進。建議今天內親自聯絡，必要時轉介專業協助。</div><div style="margin-top:1rem">'+btn('close','我知道了','pri blk')+'</div>');}
-function careNote(c){if(c.sens&&!SHOWN[c.id])return '<span class="sm">🔒 敏感紀錄（內容已隱藏）</span>';return esc(c.note||'');}
+function careNote(c){if(c.sens&&!SHOWN[c.id])return '<span class="sm">🔒 敏感紀錄（內容已隱藏）</span>';var o=esc(c.note||''),L=['看見','放下','下一步'],i;if(c.r)for(i=0;i<3;i++)if(c.r[i])o+='<div class="sm">'+L[i]+'：'+esc(c.r[i])+'</div>';return o;}
 function careSheet(mid){if(!D.members.length){toast('請先新增會友');return;}
  openSheet('記一筆關懷',fld('c_m','對象','<select id="c_m">'+memberOpts(mid)+'</select>')+fld('c_d','日期','<input id="c_d" type="date" value="'+today()+'">')+
  fld('c_t','方式','<select id="c_t">'+opts(CTYPES,'探訪')+'</select>')+fld('c_n','內容','<textarea id="c_n" rows="4"></textarea>')+
  fld('c_f','跟進日期（選填）','<input id="c_f" type="date">')+'<div style="margin:.4rem 0">'+btn('fuq','3 天','sm2','data-n="3"')+' '+btn('fuq','1 週','sm2','data-n="7"')+' '+btn('fuq','2 週','sm2','data-n="14"')+' '+btn('fuq','1 個月','sm2','data-n="30"')+'</div>'+
- '<label class="chk" style="margin-top:.5rem"><input id="c_s" type="checkbox"><span class="sm">敏感紀錄（如家暴、重大疾病、婚姻危機）：列表預設隱藏內容，搜尋也找不到</span></label><div style="margin-top:1rem">'+btn('savec','儲存','pri blk')+'</div>');}
+ (SET.so!==false?'<details style="margin-top:.4rem"><summary class="sm">探訪後三行（選填）</summary>'+fld('c_r1','我看見什麼','<textarea id="c_r1" rows="2"></textarea>')+fld('c_r2','我如何放下自己','<textarea id="c_r2" rows="2"></textarea>')+fld('c_r3','下一步是什麼','<textarea id="c_r3" rows="2"></textarea>')+'</details>':'')+'<label class="chk" style="margin-top:.5rem"><input id="c_s" type="checkbox"><span class="sm">敏感紀錄（如家暴、重大疾病、婚姻危機）：列表預設隱藏內容，搜尋也找不到</span></label><div style="margin-top:1rem">'+btn('savec','儲存','pri blk')+'</div>');}
 function praySheet(mid){openSheet('新增代禱事項',fld('p_m','為誰代禱','<select id="p_m">'+memberOpts(mid,1)+'</select>')+fld('p_t','代禱內容','<textarea id="p_t" rows="4"></textarea>')+'<div style="margin-top:1rem">'+btn('savep','儲存','pri blk')+'</div>');}
 
 /* ---------- views ---------- */
@@ -253,8 +281,11 @@ function vToday(){var t=today(),o='',i,j,c,m;
  var al=D.days[t]&&D.days[t].alone;
  o+=bkCard();
  o+='<div style="margin:.2rem 0 .6rem">'+btn('search','🔍 搜尋全部紀錄','sm2')+'</div>';
+ o+=secH('與主','先與主同在');
  o+='<div class="card"><label class="chk"><input type="checkbox" data-act="alone"'+(al?' checked':'')+'><b>今天已先與主獨處</b></label><div class="sub">先生命，再關係，後事工。</div></div>';
  var vv=VERSES[doy()%VERSES.length];o+='<div class="vs"><b>'+esc(vv[0])+'</b><br>'+esc(vv[1])+'</div>';
+ if(SET.so!==false)o+=secH('與己','無己、安息、同行')+examCard(t)+soulCard(t);
+ o+=secH('與人','羊群與代禱');
  var fu=[];for(i=0;i<D.cares.length;i++){c=D.cares[i];if(c.fu&&!c.done&&c.fu<=t)fu.push(c);}
  fu.sort(function(a,b){return a.fu<b.fu?-1:1;});
  o+='<h2>待跟進</h2><div class="card">';
@@ -267,11 +298,11 @@ function vToday(){var t=today(),o='',i,j,c,m;
  quiet.sort(function(a,b){return (a[1]||'0')<(b[1]||'0')?-1:1;});
  if(quiet.length){o+='<h2>也許可以問候一下</h2><div class="card">';for(i=0;i<quiet.length&&i<5;i++)o+='<div class="item clk" data-act="member" data-id="'+quiet[i][0].id+'"><div class="grow t">'+esc(quiet[i][0].name)+'</div><div class="sm">'+(quiet[i][1]?'上次關懷 '+ago(quiet[i][1]):'尚無關懷紀錄')+(quiet[i][0].rhy>0?'・'+rhyName(quiet[i][0].rhy):'')+'</div></div>';o+='</div><div class="note">這只是提醒，不是評分；人的狀況比紀錄更重要。</div>';}
  var pr=[];for(i=0;i<D.prayers.length;i++)if(!D.prayers[i].ans)pr.push(D.prayers[i]);
- o+=todayAdmin();o+='<h2>代禱事項</h2><div class="card">';
+ o+=prayWheel(t);o+='<h2>代禱事項</h2><div class="card">';
  if(!pr.length)o+='<div class="sub">還沒有代禱事項。</div>';
  for(i=0;i<pr.length&&i<5;i++)o+='<div class="item"><div class="grow"><div class="t">'+(pr[i].mid?esc(mname(pr[i].mid)):'一般代禱')+'</div><div class="sm">'+esc(pr[i].text.slice(0,60))+'</div></div>'+btn('pdone','蒙應允','sm2','data-id="'+pr[i].id+'"')+'</div>';
  o+='<div style="margin-top:.6rem">'+btn('addp','＋ 代禱','sm2')+' '+btn('prayers','看全部','sm2')+'</div></div>';
- o+='<div style="margin-top:1rem">'+btn('addc','＋ 記一筆關懷','pri blk')+'</div>';return o;}
+ o+=secH('與事','行政與事工')+todayAdmin()+'<div style="margin-top:1rem">'+btn('addc','＋ 記一筆關懷','pri blk')+'</div>';return o;}
 function vPrayers(){var o='<div class="row"><button class="b sm2" data-act="back">← 返回</button><h1>代禱牆</h1></div>',i,p,a=[],b=[];
  for(i=0;i<D.prayers.length;i++)(D.prayers[i].ans?b:a).push(D.prayers[i]);
  o+='<div class="card">';if(!a.length)o+='<div class="sub">沒有進行中的代禱。</div>';
@@ -283,7 +314,7 @@ function snip(txt,q){txt=String(txt||'').replace(/\s+/g,' ');var i=txt.toLowerCa
 function gsHtml(q){q=(q||'').trim().toLowerCase();if(!q)return '<div class="sub">輸入姓名、小組、關懷內容、代禱、講章或會議關鍵字。標為敏感的關懷內容不會被搜尋。</div>';
  var o='',n=0,i,j,m,c,p,s,hit=function(x){return x&&String(x).toLowerCase().indexOf(q)>=0;},row=function(act,id,t,sub){n++;o+='<div class="item clk" data-act="'+act+'" data-id="'+id+'"><div class="grow"><div class="t">'+t+'</div><div class="sm">'+sub+'</div></div></div>';};
  for(i=0;i<D.members.length&&n<40;i++){m=D.members[i];if(hit(m.name)||hit(m.nick)||hit(m.grp)||hit(m.fam)||hit(m.role)||hit(m.nt)||hit(m.ph))row('member',m.id,esc(m.name),'會友・'+esc([m.cat,m.grp,m.fam].filter(Boolean).join('・')));}
- for(i=0;i<D.cares.length&&n<40;i++){c=D.cares[i];if(c.sens)continue;if(hit(c.note))row('member',c.mid,esc(mname(c.mid)),'關懷 '+c.date+'・'+snip(c.note,q));}
+ for(i=0;i<D.cares.length&&n<40;i++){c=D.cares[i];if(c.sens)continue;if(hit(c.note)||hit((c.r||[]).join(' ')))row('member',c.mid,esc(mname(c.mid)),'關懷 '+c.date+'・'+snip(c.note||(c.r||[]).join(' '),q));}
  for(i=0;i<D.prayers.length&&n<40;i++){p=D.prayers[i];if(hit(p.text))row(p.mid?'member':'prayers',p.mid||'',p.mid?esc(mname(p.mid)):'一般代禱','代禱・'+snip(p.text,q));}
  for(i=0;i<D.sermons.length&&n<40;i++){s=D.sermons[i];if(hit(s.title)||hit(s.ref)||hit(s.theme)||hit(s.points)||hit(s.ill)||hit(s.app))row('sermon',s.id,esc(s.title||'（未命名）'),'講章・'+esc(s.ref||''));}
  for(i=0;i<D.meetings.length&&n<40;i++){m=D.meetings[i];var dh=false;for(j=0;j<(m.decs||[]).length;j++)if(hit(m.decs[j].t))dh=true;if(hit(m.title)||hit(m.notes)||hit(m.att)||dh)row('meeting',m.id,esc(m.title||'（未命名）'),'會議・'+m.date);}
@@ -300,9 +331,9 @@ function flistHtml(q){var a=D.members.slice().sort(function(x,y){var gx=GB?(x[GB
 function sameRow(m){var o='',i,x,seen={},a=[];for(i=0;i<D.members.length;i++){x=D.members[i];if(x.id===m.id)continue;if((m.fam&&x.fam===m.fam)||(m.grp&&x.grp===m.grp)){if(!seen[x.id]){seen[x.id]=1;a.push(x);}}}
  if(!a.length)return '';o='<div class="sm" style="margin-top:.5rem">同一家庭／小組：';for(i=0;i<a.length;i++)o+='<a class="chip" href="#" data-act="member" data-id="'+a[i].id+'" onclick="return false">'+esc(a[i].name)+'</a>';return o+'</div>';}
 function vMember(){var m=getM(V.id);if(!m){V.sub=null;return vFlock();}var o='<div class="row"><button class="b sm2" data-act="back">← 返回</button></div>',i,c,p;
- o+='<div class="card"><h1>'+esc(m.name)+(m.nick?'<span class="sm">（'+esc(m.nick)+'）</span>':'')+'</h1><div><span class="chip">'+esc(m.cat||'')+'</span>'+(m.grp?'<span class="chip">'+esc(m.grp)+'</span>':'')+(m.fam?'<span class="chip">'+esc(m.fam)+'</span>':'')+(m.role?'<span class="chip">'+esc(m.role)+'</span>':'')+(m.rhy?'<span class="chip">'+esc(rhyName(m.rhy))+'</span>':'')+'</div>'+sameRow(m);
+ o+='<div class="card"><h1>'+esc(m.name)+(m.nick?'<span class="sm">（'+esc(m.nick)+'）</span>':'')+'</h1><div><span class="chip">'+esc(m.cat||'')+'</span>'+(m.grp?'<span class="chip">'+esc(m.grp)+'</span>':'')+(m.fam?'<span class="chip">'+esc(m.fam)+'</span>':'')+(m.t235&&m.c235?'<span class="chip">'+esc(m.t235)+'</span>':'')+(m.role?'<span class="chip">'+esc(m.role)+'</span>':'')+(m.rhy?'<span class="chip">'+esc(rhyName(m.rhy))+'</span>':'')+'</div>'+sameRow(m);
  if(m.bd)o+='<div class="sm">生日：'+esc(m.bd.slice(5))+'</div>';if(m.ph)o+='<div class="sm">電話：<a href="tel:'+esc(m.ph)+'">'+esc(m.ph)+'</a></div>';if(m.nt)o+='<div style="margin-top:.5rem;white-space:pre-wrap">'+esc(m.nt)+'</div>';
- o+='</div><div class="grid2">'+btn('addc','記關懷','pri','data-id="'+m.id+'"')+btn('addp','加代禱','','data-id="'+m.id+'"')+btn('prep','預備探訪（小智）','','data-id="'+m.id+'"')+btn('editm','編輯','','data-id="'+m.id+'"')+'</div>';
+ o+='</div>'+(SET.so!==false?'<div class="card" style="border-left:3px solid var(--gold)"><div class="sm">探訪前，先靜默禱告一句：</div><div>'+esc(pre())+'</div></div>':'')+'<div class="grid2">'+btn('addc','記關懷','pri','data-id="'+m.id+'"')+btn('addp','加代禱','','data-id="'+m.id+'"')+btn('prep','預備探訪（小智）','','data-id="'+m.id+'"')+btn('editm','編輯','','data-id="'+m.id+'"')+'</div>';
  o+='<h2>關懷紀錄</h2><div class="card">';var cs=[];for(i=0;i<D.cares.length;i++)if(D.cares[i].mid===m.id)cs.push(D.cares[i]);cs.sort(function(a,b){return a.date<b.date?1:-1;});
  if(!cs.length)o+='<div class="sub">尚無紀錄。</div>';
  for(i=0;i<cs.length;i++){c=cs[i];o+='<div class="item"><div class="grow"><div class="sm">'+c.date+'・<span class="chip">'+esc(c.type)+'</span></div><div style="white-space:pre-wrap">'+careNote(c)+'</div>'+(c.fu?'<div class="sm '+(c.done?'ok':'')+'">跟進：'+c.fu+(c.done?'（已完成）':'')+'</div>':'')+'</div>'+(c.fu&&!c.done?btn('cdone','完成','sm2','data-id="'+c.id+'"'):'')+(c.sens?btn('cshow',SHOWN[c.id]?'隱藏':'顯示','sm2','data-id="'+c.id+'"'):'')+btn('csens',c.sens?'🔒':'🔓','sm2','data-id="'+c.id+'"')+btn('cdel','✕','sm2','data-id="'+c.id+'"')+'</div>';}
@@ -438,6 +469,7 @@ function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i+
  o+='<h2>安全</h2><div class="card">'+fld('s_lk','自動鎖定','<select id="s_lk" onchange="window.PCA.lk(this.value)">'+['1','5','15'].map(function(v){return '<option value="'+v+'"'+(+v===SET.lockMin?' selected':'')+'>'+v+' 分鐘無操作或離開後</option>';}).join('')+'</select>')+'<div style="margin-top:.6rem">'+btn('chpw','更改密碼')+' '+btn('lock','立即鎖定')+'</div></div>';
  o+='<h2>資料</h2><div class="card"><div class="sub">備份檔仍是加密的，需要備份當時的密碼才能還原。建議每週備份，並存放在安全的地方。</div><div class="sm" style="margin-top:.3rem">上次備份：'+(SET.lastBackup?fmtDate(SET.lastBackup):'尚未備份')+'</div><div style="margin-top:.6rem">'+btn('export','匯出加密備份','pri')+' '+btn('import','匯入備份')+' '+btn('ics','匯出到行事曆')+' '+btn('dlbible','下載經文供離線核對')+'</div><input id="impf" type="file" accept=".json,application/json" style="display:none"></div>';
  o+='<h2>小智（AI）</h2><div class="card"><label class="chk"><input type="checkbox" data-act="aitog"'+(SET.ai?' checked':'')+'><span>啟用小智</span></label><label class="chk"><input type="checkbox" data-act="pvtog"'+(SET.pv!==false?' checked':'')+'><span>送出前預覽去識別後的內容（建議開啟）</span></label><details><summary class="sm">進階</summary>'+fld('s_px','中繼網址（空白＝預設）','<input id="s_px" value="'+esc(SET.proxy||'')+'" onchange="window.PCA.set(\'proxy\',this.value)">')+fld('s_mf','快速模型','<input id="s_mf" value="'+esc(SET.mFast||M_FAST)+'" onchange="window.PCA.set(\'mFast\',this.value)">')+fld('s_md','深入模型','<input id="s_md" value="'+esc(SET.mDeep||M_DEEP)+'" onchange="window.PCA.set(\'mDeep\',this.value)">')+'</details></div>';
+ o+='<h2>靈修與省察</h2><div class="card"><label class="chk"><input type="checkbox" data-act="sotog"'+(SET.so!==false?' checked':'')+'><span>顯示「與己」省察、牧者靈魂照顧與探訪禱告提示</span></label><details><summary class="sm">自訂語句</summary>'+[0,1,2].map(function(i){return fld('s_q'+i,'省察問題 '+(i+1),'<input id="s_q'+i+'" value="'+esc(exq(i))+'" onchange="window.PCA.exqs('+i+',this.value)">');}).join('')+fld('s_pre','探訪前禱告','<input id="s_pre" value="'+esc(pre())+'" onchange="window.PCA.set(\'pre\',this.value)">')+'<div class="note">語句可依你的牧養用語修改；清空會還原預設。內容只存在這支手機，不送給小智。</div></details></div>';
  o+='<h2>外觀</h2><div class="card">'+fld('s_fs','字級','<select id="s_fs" onchange="window.PCA.fs(this.value)">'+['標準','大','特大','超大'].map(function(n,k){return '<option value="'+k+'"'+(k===SET.font?' selected':'')+'>'+n+'</option>';}).join('')+'</select>')+'</div>';
  o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div class="sub">自動更新：已啟用。有新版時，會在您鎖定或離開 App 時自動更新。</div><div style="margin-top:.6rem">'+btn('upd','立即檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
  o+='<div style="margin-top:1.5rem">'+btn('wipe','清除全部資料','dng blk')+'</div>';return o;}
@@ -544,12 +576,20 @@ lock:function(){lockNow();},
 setup:function(){doSetup();},unlock:function(){doUnlock();},
 wipe0:function(){if(confirm('這會清除這支手機上的所有牧會資料，無法復原。確定嗎？')){vDel();D=null;KEY=null;renderLock();}},
 wipe:function(){if(confirm('清除全部資料，無法復原。確定嗎？')&&confirm('再確認一次：真的要全部清除嗎？')){vDel();D=null;KEY=null;renderLock();}},
+sotog:function(){SET.so=(SET.so===false);saveSet();render();},ex:function(){},exhist:function(){exHist();},
+sab:function(){var w=wk();D.soul.sab[w]=!D.soul.sab[w];save();toast(D.soul.sab[w]?'願你在主裡得安息':'已取消');},
+peerset:function(){peerSheet();},peersave:function(){D.soul.peer=val('pe_m');if(D.soul.peer&&!D.soul.peerAt)D.soul.peerAt='';save();closeSheet();render();},
+peerdone:function(){D.soul.peerAt=today();save();render();toast('感謝主，彼此扶持');},
+bo:function(){boSheet();},
+bosave:function(){var n=0,i;for(i=0;i<BOQ.length;i++)if($('bo'+i)&&$('bo'+i).checked)n++;D.soul.bo.push({date:today(),n:n});if(D.soul.bo.length>12)D.soul.bo=D.soul.bo.slice(-12);save();
+ openSheet('謝謝你誠實面對',n>=3?'<div class="card">這一週有 '+n+' 項亮起紅燈。這是自我提醒，不是診斷。建議這幾天主動找屬靈同伴或信任的人談一談；若持續疲憊，請諮詢醫師或專業輔導。</div>':'<div class="card">目前看來還撐得住。仍請記得休息，也讓別人有機會扶持你。</div>');render();},
+pwheel:function(el){var r=dayRec(today()),id=el.getAttribute('data-id'),a=r.pr||(r.pr=[]),i=a.indexOf(id);if(i>=0)a.splice(i,1);else a.push(id);save();},
 search:function(){V.sub='search';V.id=null;render();setTimeout(function(){var e=$('gq');if(e)e.focus();},50);},
 alone:function(){var t=today();if(!D.days[t])D.days[t]={};D.days[t].alone=!D.days[t].alone;save();toast(D.days[t].alone?'願今天與主同行':'已取消');},
 addm:function(){memberSheet('');},
 editm:function(el){memberSheet(el.getAttribute('data-id'));},
 savem:function(el){var id=el.getAttribute('data-id'),n=val('f_name').trim();if(!n){toast('請輸入姓名');return;}
- var m=id?getM(id):{id:uid(),created:today()};m.name=n;m.nick=val('f_nick').trim();m.cat=val('f_cat');m.grp=val('f_grp').trim();m.fam=val('f_fam').trim();m.rhy=+val('f_rhy')||0;m.role=val('f_role').trim();m.bd=val('f_bd');m.ph=val('f_ph').trim();m.nt=val('f_nt');
+ var m=id?getM(id):{id:uid(),created:today()};m.name=n;m.nick=val('f_nick').trim();m.cat=val('f_cat');m.grp=val('f_grp').trim();m.fam=val('f_fam').trim();m.c235=!!($('f_235c')&&$('f_235c').checked);m.t235=(val('f_235')&&m.c235)?val('f_235'):'';if(val('f_235')&&!m.c235)toast('未勾選同意，235 關係沒有記錄');m.rhy=+val('f_rhy')||0;m.role=val('f_role').trim();m.bd=val('f_bd');m.ph=val('f_ph').trim();m.nt=val('f_nt');
  if(!id)D.members.push(m);save();closeSheet();render();toast('已儲存');},
 member:function(el){V.sub='member';V.id=el.getAttribute('data-id');render();},
 delm:function(el){var id=el.getAttribute('data-id');if(!confirm('刪除這位會友，以及他的關懷與代禱紀錄？無法復原。'))return;
@@ -557,7 +597,8 @@ delm:function(el){var id=el.getAttribute('data-id');if(!confirm('刪除這位會
 addc:function(el){careSheet(el&&el.getAttribute?el.getAttribute('data-id'):'');},
 fuq:function(el){$('c_f').value=addDays(+el.getAttribute('data-n'));},
 savec:function(){var mid=val('c_m');if(!mid){toast('請選擇對象');return;}
- var nt=val('c_n').trim(),rk=riskKind(nt),rec={id:uid(),mid:mid,date:val('c_d')||today(),type:val('c_t'),note:nt,fu:val('c_f'),done:false,sens:!!($('c_s')&&$('c_s').checked)};
+ var nt=val('c_n').trim(),rr=[val('c_r1').trim(),val('c_r2').trim(),val('c_r3').trim()],rk=riskKind(nt+' '+rr.join(' ')),rec={id:uid(),mid:mid,date:val('c_d')||today(),type:val('c_t'),note:nt,fu:val('c_f'),done:false,sens:!!($('c_s')&&$('c_s').checked)};
+ if(rr[0]||rr[1]||rr[2])rec.r=rr;
  if(rk){rec.sens=true;if(!rec.fu)rec.fu=addDays(1);}
  D.cares.push(rec);save();closeSheet();render();if(rk)riskSheet(rk);else toast('已記錄');},
 csens:function(el){var id=el.getAttribute('data-id'),i;for(i=0;i<D.cares.length;i++)if(D.cares[i].id===id)D.cares[i].sens=!D.cares[i].sens;save();render();},
@@ -616,6 +657,8 @@ document.addEventListener('visibilitychange',function(){if(document.hidden){hidd
  else{if(D&&hiddenAt&&Date.now()-hiddenAt>SET.lockMin*60000)lockNow();hiddenAt=0;checkUpdate(false);}});
 window.addEventListener('pagehide',function(){if(D)flush();});
 window.PCA={mt:function(k,v){var m=getMt(V.id);if(m){m[k]=v;save();}},sv:function(k,v){var m=getS(V.id);if(m){m[k]=v;save();}},flist:function(){var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gb:function(v){GB=v;var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gs:function(){var e=$('gres');if(e&&D)e.innerHTML=gsHtml(val('gq'));},
+ ex:function(i,v){var r=dayRec(today());if(!r.ex)r.ex=['','',''];r.ex[i]=v;save();toast('已儲存');},
+ exqs:function(i,v){SET.exq=SET.exq||['','',''];SET.exq[i]=v.trim();saveSet();toast('已儲存');},
  pn:function(v){D.set.pname=v.trim();save();toast('已儲存');},lk:function(v){SET.lockMin=+v||5;saveSet();resetIdle();},
  fs:function(v){SET.font=+v||0;saveSet();applyFont();},set:function(k,v){v=v.trim();if(v)SET[k]=v;else delete SET[k];saveSet();toast('已儲存');}};
 
