@@ -7,11 +7,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="牧會小幫手">
+<meta name="apple-mobile-web-app-title" content="牧會助理">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
-<title>321牧會小幫手</title>
+<title>321牧會助理</title>
 <style>
 :root{--bg:#f6f3ec;--card:#fff;--ink:#222;--sub:#6b6657;--brand:#123F92;--brand2:#e8eefb;--gold:#B8893A;--line:#e5e0d3;--warn:#a33;--ok:#2d7a4b}
 @media(prefers-color-scheme:dark){:root{--bg:#0f1626;--card:#18223a;--ink:#ece8dd;--sub:#a5a899;--brand:#7fa6ff;--brand2:#22305a;--gold:#d9b168;--line:#2b3652;--warn:#ff8f8f;--ok:#7fd49b}}
@@ -75,7 +75,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 </head>
 <body>
 <div id="app">
-<header id="hd"><b>321牧會小幫手</b><button id="lkb" data-act="lock">🔒 鎖定</button></header>
+<header id="hd"><b>321牧會助理</b><button id="lkb" data-act="lock">🔒 鎖定</button></header>
 <div id="updbar" hidden data-act="upd">有新版本，點此更新</div>
 <main id="main"></main>
 <nav id="tabs"></nav>
@@ -85,7 +85,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.3.1';
+var APPVER='1.3.2';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -132,7 +132,7 @@ var CMDS={'探訪':{p:'請協助牧者預備一次探訪，依序給：1.探訪�
 '會議':{p:'請擬一份會議議程草稿：時間分配、討論事項、決議事項欄位、禱告開始與結束，並提醒可能的張力點。會議主題與人數：',m:0,t:900},
 '會記':{p:'請把以下會議紀錄整理成：1.重點摘要 2.決議事項（附建議負責人與期限，標明為建議）3.待追蹤事項 4.下次會議建議議題。不確定的地方標明，不要補寫未提到的內容。紀錄：',m:0,t:1200},
 '講綱':{p:'請提供一份講道大綱：主題句、三個要點（各附經文與一句應用）、一個比喻或例子、結語與呼召。忠於經文脈絡，不確定處標明。經文或主題：',m:1,t:1800}};
-var SYS='你是「小智」，台灣貴格會一位牧者的牧會小幫手。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。格式：短標題與條列，不用表格與程式碼。';
+var SYS='你是「小智」，台灣貴格會一位牧者的牧會助理。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。格式：短標題與條列，不用表格與程式碼。';
 var CRISIS_RE=/自殺|輕生|不想活|想死|結束生命|了結自己|活不下去|傷害自己|自傷|割腕|跳樓|尋短|suicid|kill myself|end my life|want to die|self-harm/i;
 
 function $(id){return document.getElementById(id);}
@@ -177,11 +177,11 @@ function lockNow(){var p=flush();p.then(function(){D=null;KEY=null;SALT=null;V={
 function resetIdle(){clearTimeout(idleT);if(D)idleT=setTimeout(lockNow,SET.lockMin*60000);}
 function renderLock(){document.body.className='locked';$('tabs').innerHTML='';
  var has=localStorage.getItem(VKEY);
- if(!has){$('main').innerHTML='<div class="lock"><img src="logo.png" alt="321牧會小幫手" style="width:150px;height:150px;border-radius:28px"><h1>歡迎使用牧會小幫手</h1><div class="sub">資料只存在這支手機上，並以您設定的密碼加密。</div>'+
+ if(!has){$('main').innerHTML='<div class="lock"><img src="logo.png" alt="321牧會助理" style="width:150px;height:150px;border-radius:28px"><h1>歡迎使用牧會助理</h1><div class="sub">資料只存在這支手機上，並以您設定的密碼加密。</div>'+
  '<div class="card" style="text-align:left">'+fld('pw1','設定密碼（至少 6 個字元，建議 8 個以上）','<input id="pw1" type="password" autocomplete="new-password">')+fld('pw2','再輸入一次','<input id="pw2" type="password" autocomplete="new-password">')+
  '<label class="chk" style="margin-top:.8rem"><input id="ack" type="checkbox"> <span class="sm">我明白：忘記密碼，資料無法找回，沒有任何後門。</span></label></div>'+btn('setup','建立並進入','pri blk')+'<div class="note" id="lerr"></div></div>';return;}
  var until=+localStorage.getItem('pca_lockuntil')||0;
- $('main').innerHTML='<div class="lock"><img src="logo.png" alt="321牧會小幫手" style="width:120px;height:120px;border-radius:24px"><h1>請輸入密碼</h1><div class="sub">先與主同在，再服事羊群。</div>'+
+ $('main').innerHTML='<div class="lock"><img src="logo.png" alt="321牧會助理" style="width:120px;height:120px;border-radius:24px"><h1>請輸入密碼</h1><div class="sub">先與主同在，再服事羊群。</div>'+
  '<div style="margin:1rem 0"><input id="pw" type="password" autocomplete="current-password" placeholder="密碼"></div>'+btn('unlock','解鎖','pri blk')+'<div class="note warn" id="lerr">'+(until>Date.now()?'嘗試次數過多，請稍後再試':'')+'</div>'+
  '<details style="margin-top:1.5rem"><summary class="sm">忘記密碼？</summary><div class="sm" style="margin-top:.5rem">為了保護羊群的隱私，沒有任何方式可以重設密碼。若有備份檔，請記得備份時的密碼；否則只能清除資料重新開始。</div>'+btn('wipe0','清除資料重新開始','dng sm2','style="margin-top:.5rem"')+'</details></div>';
  setTimeout(function(){var e=$('pw');if(e)e.focus();},50);}
@@ -374,7 +374,7 @@ function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i+
  o+='<h2>資料</h2><div class="card"><div class="sub">備份檔仍是加密的，需要備份當時的密碼才能還原。建議每月備份，並存放在安全的地方。</div><div style="margin-top:.6rem">'+btn('export','匯出加密備份','pri')+' '+btn('import','匯入備份')+' '+btn('dlbible','下載經文供離線核對')+'</div><input id="impf" type="file" accept=".json,application/json" style="display:none"></div>';
  o+='<h2>小智（AI）</h2><div class="card"><label class="chk"><input type="checkbox" data-act="aitog"'+(SET.ai?' checked':'')+'><span>啟用小智</span></label><details><summary class="sm">進階</summary>'+fld('s_px','中繼網址（空白＝預設）','<input id="s_px" value="'+esc(SET.proxy||'')+'" onchange="window.PCA.set(\'proxy\',this.value)">')+fld('s_mf','快速模型','<input id="s_mf" value="'+esc(SET.mFast||M_FAST)+'" onchange="window.PCA.set(\'mFast\',this.value)">')+fld('s_md','深入模型','<input id="s_md" value="'+esc(SET.mDeep||M_DEEP)+'" onchange="window.PCA.set(\'mDeep\',this.value)">')+'</details></div>';
  o+='<h2>外觀</h2><div class="card">'+fld('s_fs','字級','<select id="s_fs" onchange="window.PCA.fs(this.value)">'+['標準','大','特大','超大'].map(function(n,k){return '<option value="'+k+'"'+(k===SET.font?' selected':'')+'>'+n+'</option>';}).join('')+'</select>')+'</div>';
- o+='<h2>關於</h2><div class="card"><div>321牧會小幫手 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div style="margin-top:.6rem">'+btn('upd','檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
+ o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div style="margin-top:.6rem">'+btn('upd','檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
  o+='<div style="margin-top:1.5rem">'+btn('wipe','清除全部資料','dng blk')+'</div>';return o;}
 function render(){if(!D){renderLock();return;}document.body.className='';var t=V.tab,o,m=$('main');
  if(V.sub==='member')o=vMember();else if(V.sub==='prayers')o=vPrayers();else if(V.sub==='flow')o=vFlow();else if(V.sub==='sermon')o=vSermon();else if(V.sub==='meeting')o=vMeeting();
