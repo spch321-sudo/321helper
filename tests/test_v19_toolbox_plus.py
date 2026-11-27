@@ -23,7 +23,7 @@ try:
     pg.fill('#pw1','pastor123');pg.fill('#pw2','pastor123');pg.check('#ack');pg.click('[data-act=setup]');pg.wait_for_selector('.sc');pg.click('.sc [data-act=close]')
     pg.click('#tabs [data-t=chat]');pg.click('[data-act=aion]');pg.wait_for_selector('#cin')
     pg.click('#tabs [data-t=mini]');pg.click('#main [data-act=tbopen]');pg.wait_for_selector('.tbg')
-    assert pg.locator('.tbg button').count()==10
+    assert pg.locator('.tbg button').count()==18
     for x in ['詩歌創作','背經默寫批改','長篇講章逐字稿','我的寫作風格']:assert x in pg.inner_text('.sc'),x
     assert '睡前' not in pg.inner_text('.sc')
     pg.screenshot(path='/tmp/toolbox2.png',full_page=True)

@@ -65,6 +65,7 @@ label.chk{display:flex;gap:.6rem;align-items:center}label.chk input{width:1.3rem
 .note{font-size:.76rem;color:var(--sub);margin-top:.4rem}
 .cmds{display:flex;gap:.4rem;overflow-x:auto;padding:.3rem 0}.cmds button{flex:none}
 .cbar{position:sticky;bottom:0;background:var(--bg);padding:.4rem 0 .6rem}
+.mtfr{width:100%;height:55vh;border:1px solid var(--line);border-radius:.8rem;background:#fff;margin:.5rem 0}#mtbig{position:fixed;top:0;left:0;right:0;bottom:0;z-index:99;background:#fff;display:flex;flex-direction:column;padding:.5rem;gap:.4rem}.mtfr2{flex:1;border:0;width:100%}.cdcv{display:block;max-width:100%;max-height:48vh;width:auto;height:auto;border-radius:.8rem;margin:.5rem auto;background:#fff}
 .c8diff{background:var(--card);border:1px solid var(--line);border-radius:.8rem;padding:.7rem;margin:.5rem 0;line-height:2;word-break:break-all;font-size:1.05rem}.c8miss{color:#c0392b;font-weight:700;text-decoration:underline}.c8extra{color:#d9822b;text-decoration:line-through}.c8img{max-width:100%;border-radius:.6rem;margin:.5rem 0}.bar{height:.5rem;background:var(--line);border-radius:1rem;overflow:hidden}.bar i{display:block;height:100%;background:var(--brand)}
 .tbg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.6rem 0}.tbg button{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:.7rem;color:inherit}.tbg span{font-size:1.5rem;line-height:1}.tbg small{font-size:.76rem;color:var(--sub);line-height:1.35}
 .appg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0}.appc{display:flex;flex-direction:column;gap:.15rem;background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:.7rem .8rem;color:inherit;text-decoration:none}.appi{width:2.3rem;height:2.3rem;border-radius:.6rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:.2rem}.appn{font-weight:700}.appfold{margin-top:12px}.appfold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 14px;border:1px dashed var(--line);border-radius:14px;background:var(--card);color:var(--brand);font-weight:700;font-size:.95rem}.appfold>summary::-webkit-details-marker{display:none}.appfold>summary::after{content:"▾"}.appfold[open]>summary::after{content:"▴"}.appfold>summary .le{display:none}.appfold[open]>summary .mo{display:none}.appfold[open]>summary .le{display:inline}.appfold[open]>summary{margin-bottom:12px}
@@ -88,7 +89,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.9.0';
+var APPVER='1.10.0';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -183,12 +184,24 @@ var TB=[
  '請寫一篇約 4 到 6 分鐘的追思致詞：以具體的回憶紀念這個人，溫柔安慰家屬，以經文（如約翰福音 11:25-26、帖撒羅尼迦前書 4:13-14、啟示錄 21:4）不施壓地分享在耶穌裡復活的盼望，最後以禱告結束。若不知道逝者的信仰，不要斷言他在哪裡，只著重神的安慰與盼望。',1,2200]];
 TB.push(['song','🎵','詩歌創作','經文或主題 → 歌詞、和弦、Suno 配樂提示詞',[['th',1,'經文或主題（例如：詩篇 23、主是我的牧者）'],['sty',1,'風格與用途（例如：小家敬拜、兒童、抒情、輕快）'],['nt',1,'其他要求（可不填，例如：副歌要好記）']],
  '請寫一首原創的敬拜詩歌（絕不抄襲現有詩歌）。依序輸出：1.歌名 2.所根據的經文（完整引用關鍵經節，和合本，寫出處）3.附段落標記（主歌一、副歌、主歌二、橋段、副歌）的歌詞，可唱、神學正確、關鍵句好記 4.同一份歌詞加上簡單吉他和弦，和弦寫在方括號內放在變化的字之前（例如 [G]主是我的[D]牧者），標明建議調性、速度（BPM）與拍號 5.一段英文的「Suno prompt」：一行風格標籤（曲風、情緒、樂器、速度、人聲）在 200 字元內，並註明上面的歌詞可貼進 Suno。保持 321 精神（讓耶穌作王，一切榮耀歸給耶穌）。',1,2800]);
+TB.push(
+['week','📰','編寫週報','本週報告事項 → 條理分明的週報',[['items',2,'本週報告事項（聚會、活動、代禱、感謝…條列貼上）'],['vs',1,'本週經文或勉勵主題（可不填）'],['who',1,'教會或單位名稱與週日日期（可不填）']],
+ '請把使用者提供的報告事項整理成一份溫暖、條理分明的教會週報：開頭一段簡短的勉勵並附一節和合本經文（寫出處）；接著分區（崇拜聚會、各項聚會與活動、代禱事項、感恩與報告、近期預告），時間與地點清楚條列，每項簡短。絕不編造資料，缺少的細節用【時間】【地點】這類空格標出。結尾用「順頌 主恩滿溢」。以條列呈現，不用表格。',0,2200],
+['pshort','📝','寫牧養短文','主題與對象 → 一篇可直接用的短文',[['topic',1,'主題或處境'],['aud',1,'對象與用途（例如：週報牧者的話、給長輩的平安信、社群貼文）'],['len',1,'字數（可不填，預設約 400 字）']],
+ '請寫一篇牧養短文，溫暖、真誠、貼近生活、不說教、不論斷：以一個生活場景或問題開頭，帶出一節完整引用的和合本經文（寫出處），給一個本週能做的具體小步驟，最後用一兩句祝福或簡短禱告結束。字數照使用者要求，沒說明就約 400 字。最後標註「草稿，請牧者修改後使用」。',0,1800],
+['devo','🌿','寫靈修小品','經文或主題 → 一篇靈修小品',[['t',1,'經文或主題（例如：詩篇 23:1-3）'],['aud',1,'對象與場合（可不填，例如：晨更、給新朋友）'],['len',1,'字數（可不填，預設約 400 字）']],
+ '請寫一篇靈修小品：標題；完整引用的和合本經文（寫出處）；「觀察」這段經文說了什麼；「省思」它如何碰觸今天的生活；「行動」一個具體的回應；最後一段短禱，結尾「奉主耶穌的名禱告，阿們」。語氣溫柔、貼近生活，字數照使用者要求，沒說明就約 400 字。',0,1800],
+['plan','🗓','事工計劃表','事工與期間 → 計劃表',[['m',1,'事工或活動名稱'],['per',1,'期間（例如：2027 年上半年、本季）'],['g',2,'目標、人力與限制（可不填）']],
+ '請擬一份事工計劃表，以條列呈現（不用表格）：1.目標一句話 2.時間表：依月或週列出，每行寫成「時間｜工作｜負責（建議）｜備註」3.所需資源與預算項目（不替人填金額，標【待估】）4.風險與備案 5.追蹤指標與檢討時間 6.禱告事項。負責人只寫「建議」，不替任何人做未經授權的承諾；不確定的地方標明。',1,2400],
+['fin','💰','財務報表','期間與收支資料 → 整理好的收支報表',[['per',1,'期間（例如：2027 年 1 月）'],['data',2,'收支資料（每行一筆，例如：奉獻 35000、水電 4200）'],['note',1,'上期結餘或其他說明（可不填）']],
+ '請把使用者提供的收支資料整理成收支報表，以條列呈現（不用表格）：收入、支出、結餘三區，每項寫成「項目｜金額」；每區小計與總計都要逐項列出加法算式並自行複核一次；支出各項占總支出的百分比；若有上期資料就列出增減；最後列出需要留意的地方。資料不足的地方標【待補】，絕不猜測或編造數字，也不要顯示任何帳號。報表最後一定寫上「數字由 AI 整理，請會計核對後再使用」。',1,2400]
+);
 var TBM=' 請與使用者用同一種語言寫作，完整引用經文並寫出出處（和合本），不確定的經文直說不確定。對話中的「會友甲、乙…」是代號，請原樣使用。適合處自然融入 321 理念（耶穌是榜樣、聖經是準則、聖靈是引導；讓耶穌作王、榮耀歸神）。用清楚的小標題與條列。';
 (function(){var i,t;for(i=0;i<TB.length;i++){t=TB[i];CMDS['工具'+t[0]]={p:t[5]+TBM+'\n使用者提供的資料：',m:t[6],t:t[7],tb:1};}})();
 var PENDTOOL=null;
 function tbHtml(){var o='<div class="sm">選一個工具，填幾個重點，小智就產出完整的預備。這只是幫助預備，不能取代真實的陪伴與禱告。</div><div class="tbg">',i,t;
  for(i=0;i<TB.length;i++){t=TB[i];o+='<button data-act="tbtool" data-k="'+t[0]+'"><span>'+t[1]+'</span><b>'+esc(t[2])+'</b><small>'+esc(t[3])+'</small></button>';}
- o+='<button data-act="mzopen"><span>✍️</span><b>背經默寫批改</b><small>📷 拍下默寫，對照和合本逐字批改</small></button><button data-act="lgopen"><span>📜</span><b>長篇講章逐字稿</b><small>20–40 分鐘，先大綱再逐段寫全文</small></button></div>';
+ o+='<button data-act="mzopen"><span>✍️</span><b>背經默寫批改</b><small>📷 拍下默寫，對照和合本逐字批改</small></button><button data-act="lgopen"><span>📜</span><b>長篇講章逐字稿</b><small>20–40 分鐘，先大綱再逐段寫全文</small></button><button data-act="slopen"><span>📽</span><b>製作投影片</b><small>內容或主題 → 16:9 簡報檔（.pptx）</small></button><button data-act="cdopen"><span>🎨</span><b>製作卡片</b><small>生日、節期、慰問卡，可分享圖片</small></button><button data-act="mtopen"><span>🧩</span><b>做成小工具</b><small>一句話描述 → 能用的網頁小工具</small></button></div>';
  var a=styleAct();return o+'<div style="margin-top:.2rem">'+btn('stylist','✍️ 我的寫作風格'+(a?'（使用中：'+esc(a.name)+'）':'')+' ›','blk')+'</div>';}
 function tbForm(k){var t=null,i,f,o;for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB[i];if(!t)return;
  o='<div class="sm">'+esc(t[3])+'</div>';
@@ -302,6 +315,108 @@ function mzGo(){mzRead();var rs=parseRefs(MZ.ref||'',40),r=rs[0];
    if(err||(MZ.img&&!written)){toast(MZ.img?'讀不出相片上的字，請拍清楚一點或改用打字':'批改失敗，請再試一次');mzPaint();return;}
    var A=mzNorm(correct),B=mzNorm(written),df=mzDiff(A,B),extra=B.length-df.same,sc=A.length?Math.max(0,Math.round(100*(df.same-Math.max(0,extra)*0.5)/A.length)):0;
    MZ.res={ops:df.ops,score:Math.min(100,sc),correct:correct,written:MZ.img?written:'',tip:String(j.tip||''),ref:MZ.ref};mzPaint();},'你忠實抄錄手寫內容，並幫助人背誦聖經。只回傳 JSON。');});}
+/* ---------- v1.10 工具箱再延伸：做成小工具、製作投影片、製作卡片 ---------- */
+function dlBlob(blob,name){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);document.body.removeChild(a);},1500);}
+function fileOut(blob,name){var f=null;try{f=new File([blob],name,{type:blob.type});}catch(e){}
+ if(f&&navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:name}).catch(function(e){if(!e||e.name!=='AbortError')dlBlob(blob,name);});return;}
+ dlBlob(blob,name);}
+function safeName(t,ext){return String(t||'牧會助理').replace(/[\\\/:*?"<>|\r\n\t]+/g,' ').trim().slice(0,40)+ext;}
+/* 做成小工具 */
+var MT={q:'',mod:'',doc:'',title:'',busy:false,saved:false,co:0};
+var MTCH=['小組奉獻金額加總計算機','每日禱告打卡表','小組隨機分組抽籤','聖經經文默寫練習卡','每月家庭收支小表','讀經進度追蹤表','禱告事項清單（可標示已蒙應允）','聚會出席點名表','小組輪流事奉排班表','經文背誦倒數計時器','活動報名人數統計','十一奉獻計算器'];
+var MTSYS='你是資深前端工程師，為教會同工做小而可靠、以手機為主的網頁小工具。只輸出「一份完整、自足的 HTML 文件」，不要任何說明，不要程式碼圍欄。硬性規則：(1) 以 <!DOCTYPE html> 開頭，含 <meta charset="utf-8">、viewport meta 與簡短的 <title>。(2) CSS 與 JavaScript 全部寫在同一個檔案裡，不可使用外部檔案、字型、圖片、CDN、fetch、XMLHttpRequest、WebSocket 或連到其他網站。(3) 不可使用 localStorage、sessionStorage、cookie；資料只放在記憶體。(4) 按鈕與輸入框至少 44px 高，字級至少 16px，版面適合手機直式，淺色底、高對比。(5) 所有可見文字用繁體中文。(6) 輸入要檢查，數字計算必須正確，提供「清除／歸零」。(7) 程式碼精簡，不寫註解。';
+function mtDoc(t){var x=String(t||'').replace(/^\s*```(?:html)?\s*/i,'').replace(/```\s*$/,'').trim(),i=x.search(/<!doctype html|<html[\s>]/i),j;
+ if(i>0)x=x.slice(i);j=x.lastIndexOf('</html>');if(j>0)x=x.slice(0,j+7);
+ if(!/<(body|script|main|div)[\s>]/i.test(x)||!/<\/(body|html)>/i.test(x))return '';
+ var csp='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; img-src data:; font-src data:; form-action \'none\'">';
+ x=x.replace(/<meta[^>]+http-equiv=["']?Content-Security-Policy[^>]*>/ig,'');
+ if(/<head[^>]*>/i.test(x))x=x.replace(/<head[^>]*>/i,function(m){return m+csp;});else if(/<html[^>]*>/i.test(x))x=x.replace(/<html[^>]*>/i,function(m){return m+'<head>'+csp+'</head>';});else x='<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'+csp+'</head><body>'+x+'</body></html>';
+ return x;}
+function mtTitle(doc,fb){var m=String(doc||'').match(/<title[^>]*>([\s\S]*?)<\/title>/i),t=m&&m[1].replace(/<[^>]*>/g,'').trim();return (t||String(fb||'').replace(/\s+/g,' ').trim()).slice(0,30)||'小工具';}
+function mtHtml(){var o='<i id="mtmk"></i>',i,L=D.tools||[],k;
+ o+='<div class="sm">一句話描述，小智幫你做成能用的網頁小工具。</div>';
+ if(!MT.doc||MT.busy){
+  o+='<textarea id="mt_q" rows="3" maxlength="300" placeholder="例如：幫我做一個小組奉獻金額加總計算機"'+(MT.busy?' disabled':'')+'>'+esc(MT.q)+'</textarea>';
+  if(!MT.busy){o+='<div class="sm" style="margin-top:.4rem">試試看：</div><div class="row" style="flex-wrap:wrap;gap:.35rem">';for(i=0;i<6;i++)k=MTCH[(MT.co+i)%MTCH.length],o+=btn('mtchip',esc(k),'sm2','data-v="'+esc(k)+'"');o+=btn('mtmore','🔄 換一批','sm2')+'</div>';}
+  o+='<div style="margin-top:.6rem">'+btn('mtgo',MT.busy?'小智正在製作…（約 20–90 秒）':'做成小工具','pri blk',MT.busy?'disabled':'')+'</div>';
+  if(MT.err&&!MT.busy)o+='<div class="note warn">'+esc(MT.err)+'</div>';
+ }else{
+  o+='<b>'+esc(MT.title)+'</b><iframe id="mtfr" class="mtfr" sandbox="allow-scripts allow-modals allow-forms" referrerpolicy="no-referrer" srcdoc="'+esc(MT.doc)+'"></iframe>';
+  o+='<div class="note warn">小工具在隔離的小框裡執行，不能上網，也看不到你和小智的對話。請自己試用、確認算得對，再給別人用；請不要在裡面放會友的個人資料。</div><div class="note">下載的 .html 檔要用 Safari 或 Chrome 開啟。</div>';
+  o+='<div class="row" style="flex-wrap:wrap">'+btn('mtbig','放大試用','sm2')+' '+btn('mtdl','下載檔案','sm2')+' '+btn('mtsh','分享','sm2')+' '+btn('mtsave',MT.saved?'已存':'存到我的小工具','pri sm2',MT.saved?'disabled':'')+' '+btn('mtnew','重做一個','sm2')+'</div>';
+  o+='<div class="fld" style="margin-top:.6rem"><label for="mt_m">想怎麼修改？例如：字再大一點、加上歸零鈕</label><input id="mt_m" maxlength="200" value="'+esc(MT.mod)+'"></div>'+btn('mtmod','修改','pri sm2');}
+ if(L.length&&!MT.busy){o+='<h2>我的小工具（'+L.length+'）</h2>';for(i=0;i<L.length;i++)o+='<div class="item"><div class="grow"><div class="t">'+esc(L[i].title)+'</div></div>'+btn('mtload','打開','pri sm2','data-id="'+L[i].id+'"')+btn('mtldl','下載','sm2','data-id="'+L[i].id+'"')+btn('mtdel','刪除','sm2','data-id="'+L[i].id+'"')+'</div>';}
+ return o;}
+function mtPaint(){if($('mtmk'))openSheet('🧩 做成小工具',mtHtml());}
+function mtRead(){var q=$('mt_q'),m=$('mt_m');if(q)MT.q=q.value;if(m)MT.mod=m.value;}
+function mtMake(base,instr){if(MT.busy)return;MT.busy=true;MT.err='';mtPaint();
+ function round(ask,acc,n,k){aiCall([{role:'user',content:ask}].concat(acc?[{role:'assistant',content:acc.replace(/\s+$/,'')},{role:'user',content:'上一段被截斷了。請從中斷的地方接著輸出剩下的 HTML（不要重複、不要說明、不要程式碼圍欄），最後以 </html> 結束。'}]:[]),M_DEEP,3500,function(err,d){
+   var t=err?'':String(extract(d)||'');
+   if(err||!t){fail(k,err&&err.name==='AbortError'?'等太久了':'沒有收到內容');return;}
+   var all=(acc||'')+t;
+   if(d&&d.stop_reason==='max_tokens'&&n<6){round(ask,all,n+1,k);return;}
+   var doc=mtDoc(all);if(!doc){fail(k,'內容不完整');return;}
+   MT.doc=doc;MT.title=mtTitle(doc,base?MT.title:instr);MT.saved=false;MT.mod='';MT.busy=false;mtPaint();},MTSYS,100000);}
+ function fail(k,why){if(k===0){go(1);return;}MT.busy=false;MT.err='做不出來（'+why+'），請換個說法或稍後再試。';mtPaint();}
+ function go(k){var ask=(base?'這是目前的小工具（HTML）：\n'+base.slice(0,16000)+'\n\n請依下面的要求修改，並回傳「完整」更新後的 HTML 文件：'+instr:'請做這個小工具：'+instr)+'\n\n所有可見文字用繁體中文，程式碼要精簡。'+(k?'上一次沒有成功，請做得更短更簡單（120 行以內），並確定文件完整、以 </html> 結束。':'');round(ask,'',0,k);}
+ go(0);}
+function mtBig(){if(!MT.doc)return;var old=$('mtbig');if(old)old.parentNode.removeChild(old);var w=document.createElement('div');w.id='mtbig';w.innerHTML='<button class="b blk" data-act="mtbigx">關閉 ✕</button><iframe class="mtfr2" sandbox="allow-scripts allow-modals allow-forms" referrerpolicy="no-referrer"></iframe>';document.body.appendChild(w);w.querySelector('iframe').srcdoc=MT.doc;}
+/* 製作投影片 */
+var SL={src:'',title:'',busy:false,blob:null,name:''};
+function slHtml(){var o='<i id="slmk"></i>';
+ if(SL.busy)return o+'<div class="note">小智正在整理投影片…（約 20–60 秒）</div>';
+ if(SL.blob)return o+'<div class="card"><b>投影片完成了</b><div class="sm">'+esc(SL.name)+'</div></div><div class="row" style="margin-top:.6rem">'+btn('slshare','分享／存檔','pri sm2')+' '+btn('sldl','下載','sm2')+' '+btn('slagain','再做一份','sm2')+'</div>';
+ var last=null,i;for(i=D.chat.length-1;i>=0;i--)if(D.chat[i].r==='a'&&D.chat[i].raw&&!D.chat[i].err){last=D.chat[i];break;}
+ return o+'<div class="sm">貼上講章、大綱或要講的內容，或只寫主題與經文，小智整理成 16:9 的投影片（.pptx），用 PowerPoint、Keynote 或 Google 簡報都能開。</div><div class="fld"><label for="sl_t">標題（可不填）</label><input id="sl_t" value="'+esc(SL.title)+'"></div><div class="fld"><label for="sl_s">內容或主題</label><textarea id="sl_s" rows="9">'+esc(SL.src)+'</textarea></div>'+(last?'<div class="row">'+btn('slmine','帶入最近一則小智回答','sm2')+'</div>':'')+'<div class="note">內容會先去除會友姓名與電話再送出。第一次使用需要網路載入簡報元件。</div>'+(SL.err?'<div class="note warn">'+esc(SL.err)+'</div>':'')+'<div style="margin-top:.6rem">'+btn('slgo','製作投影片','pri blk')+'</div>';}
+function slPaint(){if($('slmk'))openSheet('📽 製作投影片',slHtml());}
+function slRead(){var a=$('sl_s'),b=$('sl_t');if(a)SL.src=a.value;if(b)SL.title=b.value;}
+function slLib(cb){if(window.PptxGenJS){cb(true);return;}var sc=document.createElement('script');sc.src='pptxgen.bundle.js';sc.onload=function(){cb(!!window.PptxGenJS);};sc.onerror=function(){cb(false);};document.head.appendChild(sc);}
+function slGo(){slRead();var src=(SL.src||'').trim();if(src.length<4){toast('請先寫內容或主題');return;}
+ SL.busy=true;SL.err='';slPaint();
+ var ask='請把下面的內容整理成講道或教學的投影片，用繁體中文。只回傳 JSON：{"title":"","subtitle":"","slides":[{"t":"投影片標題","p":["短重點"],"v":"完整經文或空字串","r":"經文出處或空字串"}]}。7 到 10 張，依序涵蓋內容的每個主要部分（主旨、重要經文、關鍵詞、應用、本週操練、結束禱告，視內容而定）；每張最多 4 個重點，每個重點 20 字內；經文投影片可以沒有重點；經文照原內容引用（和合本）；每個欄位都要短，讓整份 JSON 精簡完整；最後一張是簡短的應用或禱告。'+(SL.title?'\n標題：'+deid(SL.title).t:'')+'\n內容：\n'+deid(src).t.slice(0,6000);
+ function fail(m){SL.busy=false;SL.err=m;slPaint();}
+ aiCall([{role:'user',content:ask}],M_DEEP,3600,function(err,d){
+  if(err){fail('整理失敗（'+(err.name==='AbortError'?'等太久了':err.message)+'），請再試一次。');return;}
+  var t=unlabel(String(extract(d)||'')),a=t.indexOf('{'),b=t.lastIndexOf('}'),j=null;try{j=JSON.parse(t.slice(a,b+1));}catch(e){}
+  if(!j||!j.slides||!j.slides.length){fail('小智沒有整理出投影片，請再試一次。');return;}
+  slLib(function(ok){if(!ok){fail('簡報元件載入失敗，請確認網路後再試。');return;}
+   try{var P=new window.PptxGenJS();P.layout='LAYOUT_16x9';var F='PMingLiU',NAVY='1E3F8F',GOLD='B8862E',t0=P.addSlide();
+    t0.background={color:NAVY};t0.addShape(P.ShapeType.rect,{x:0,y:4.9,w:10,h:0.08,fill:{color:GOLD}});
+    t0.addText(String(j.title||SL.title||'講道').slice(0,60),{x:0.5,y:1.4,w:9,h:1.8,fontFace:F,fontSize:48,bold:true,color:'FFFFFF',align:'center',valign:'middle',fit:'shrink'});
+    if(j.subtitle)t0.addText(String(j.subtitle).slice(0,80),{x:0.5,y:3.2,w:9,h:0.9,fontFace:F,fontSize:28,color:'F3D9A0',align:'center',fit:'shrink'});
+    j.slides.slice(0,14).forEach(function(sd){var sl=P.addSlide(),y=1.3,pts=(sd.p||[]).filter(function(x){return x;}).slice(0,4);sl.background={color:'FFFFFF'};
+     sl.addShape(P.ShapeType.rect,{x:0,y:0,w:10,h:0.12,fill:{color:GOLD}});
+     sl.addText(String(sd.t||'').slice(0,40),{x:0.5,y:0.3,w:9,h:0.9,fontFace:F,fontSize:36,bold:true,color:NAVY,fit:'shrink'});
+     if(pts.length){sl.addText(pts.map(function(x){return {text:String(x),options:{bullet:true,breakLine:true}};}),{x:0.6,y:y,w:8.8,h:sd.v?2.2:3.9,fontFace:F,fontSize:30,color:'222222',valign:'top',paraSpaceAfter:8,fit:'shrink'});y+=2.3;}
+     if(sd.v)sl.addText([{text:String(sd.v),options:{breakLine:true}},{text:sd.r?'—— '+sd.r:'',options:{fontSize:22,color:GOLD}}],{x:0.6,y:pts.length?y:1.4,w:8.8,h:pts.length?1.6:3.6,fontFace:F,fontSize:28,color:'333333',valign:'middle',fill:{color:'F7EFDD'},margin:0.2,fit:'shrink'});});
+    P.write({outputType:'blob'}).then(function(bl){SL.blob=bl;SL.name=safeName(j.title||SL.title||'投影片','.pptx');SL.busy=false;slPaint();toast('投影片完成');},function(){fail('投影片檔案產生失敗，請再試一次。');});
+   }catch(e){fail('投影片檔案產生失敗，請再試一次。');}});},'你忠實整理內容成投影片，只回傳 JSON。');}
+/* 製作卡片 */
+var CDT=[['bday','生日快樂','🎂'],['xmas','聖誕快樂','🎄'],['easter','復活節快樂','✝️'],['ny','新年蒙福','🧧'],['thx','感謝你','🙏'],['care','願主安慰你','🕊'],['plain','願主賜福','✨']];
+var CDP=[['藍夜',['#123F92','#071A42'],'#F2ECDD','#D4A65B'],['暖陽',['#F8E3B0','#E9B872'],'#4A3216','#8A5F12'],['玫瑰',['#FBE4E9','#E9A9B8'],'#5B2433','#A33A55'],['晨綠',['#E3F0E1','#9CC9A0'],'#1F4A2A','#2D7A4B']];
+var CD={t:'bday',p:0,to:'',txt:'',vs:'',from:''};
+function cdHtml(){var o='<i id="cdmk"></i>',i;
+ o+='<div class="row" style="flex-wrap:wrap;gap:.35rem">';for(i=0;i<CDT.length;i++)o+=btn('cdtype',CDT[i][2]+' '+CDT[i][1],(CD.t===CDT[i][0]?'pri ':'')+'sm2','data-k="'+CDT[i][0]+'"');o+='</div>';
+ o+='<div class="row" style="flex-wrap:wrap;gap:.35rem;margin-top:.4rem">';for(i=0;i<CDP.length;i++)o+=btn('cdtpl',CDP[i][0],(CD.p===i?'pri ':'')+'sm2','data-k="'+i+'"');o+='</div>';
+ o+='<canvas id="cdcv" width="1080" height="1350" class="cdcv"></canvas>';
+ o+='<div class="fld"><label for="cd_to">稱呼（可不填）</label><input id="cd_to" oninput="window.PCA.cd()" value="'+esc(CD.to)+'"></div><div class="fld"><label for="cd_vs">經文（可不填，例如：民數記 6:24-26）</label><input id="cd_vs" oninput="window.PCA.cd()" value="'+esc(CD.vs)+'"></div><div class="fld"><label for="cd_tx">祝福的話</label><textarea id="cd_tx" rows="4" oninput="window.PCA.cd()">'+esc(CD.txt)+'</textarea></div><div class="row">'+btn('cdwrite','✍️ 請小智寫祝福','sm2')+'</div><div class="fld"><label for="cd_fr">署名</label><input id="cd_fr" oninput="window.PCA.cd()" value="'+esc(CD.from||(D.set&&D.set.pname)||'')+'"></div><div class="note">卡片只在手機上畫出來，不會上傳。稱呼若是會友姓名，請求小智寫祝福時會自動換成代號。</div><div class="row" style="margin-top:.4rem">'+btn('cdshare','分享／存圖','pri sm2')+' '+btn('cddl','下載圖片','sm2')+'</div>';
+ return o;}
+function cdRead(){var a=$('cd_to'),b=$('cd_vs'),c=$('cd_tx'),d=$('cd_fr');if(a)CD.to=a.value;if(b)CD.vs=b.value;if(c)CD.txt=c.value;if(d)CD.from=d.value;}
+function cdSheet(){openSheet('🎨 製作卡片',cdHtml());setTimeout(cdDraw,0);}
+function cdWrap(cx,text,maxW){var out=[],ps=String(text||'').split('\n'),i,line,j,ch,NS='，。、；：？！）」』】》〉·…—％,.;:?!)';for(var p=0;p<ps.length;p++){line='';for(i=0;i<ps[p].length;i++){ch=ps[p].charAt(i);if(cx.measureText(line+ch).width>maxW&&line){if(NS.indexOf(ch)>=0){line+=ch;out.push(line);line='';continue;}out.push(line);line='';}line+=ch;}out.push(line);}
+ return out;}
+function cdDraw(){var cv=$('cdcv');if(!cv)return;var cx=cv.getContext('2d'),W=1080,H=1350,P=CDP[CD.p],T=null,i,g;for(i=0;i<CDT.length;i++)if(CDT[i][0]===CD.t)T=CDT[i];
+ g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,P[1][0]);g.addColorStop(1,P[1][1]);cx.fillStyle=g;cx.fillRect(0,0,W,H);
+ cx.strokeStyle=P[3];cx.lineWidth=4;cx.strokeRect(50,50,W-100,H-100);cx.lineWidth=1.5;cx.strokeRect(68,68,W-136,H-136);
+ var F='"Noto Serif TC","Songti TC","PMingLiU",Georgia,serif';cx.textAlign='center';cx.textBaseline='alphabetic';
+ cx.font='110px '+F;cx.fillStyle=P[3];cx.fillText(T[2],W/2,230);
+ cx.font='bold 96px '+F;cx.fillStyle=P[2];cx.fillText(T[1],W/2,360);
+ var y=450;if(CD.to.trim()){cx.font='46px '+F;cx.fillStyle=P[2];cx.fillText(CD.to.trim().slice(0,20)+(/[一-鿿]/.test(CD.to)?' 平安':''),W/2,y);y+=80;}
+ var vs=CD.vs.trim();if(vs){cx.font='italic 36px '+F;cx.fillStyle=P[3];cx.fillText('— '+vs.slice(0,30)+' —',W/2,y);y+=70;}
+ var body=CD.txt.trim(),sz=50,lines,maxH=H-y-230;
+ if(body){while(sz>26){cx.font=sz+'px '+F;lines=cdWrap(cx,body,W-260);if(lines.length*sz*1.55<=maxH)break;sz-=2;}cx.font=sz+'px '+F;lines=cdWrap(cx,body,W-260);cx.fillStyle=P[2];for(i=0;i<lines.length;i++)cx.fillText(lines[i],W/2,y+i*sz*1.55+sz);}
+ var fr=(CD.from||(D.set&&D.set.pname)||'').trim();if(fr){cx.font='44px '+F;cx.fillStyle=P[3];cx.fillText(fr.slice(0,24),W/2,H-130);}}
+function cdBlob(cb){var cv=$('cdcv');if(!cv){cb(null);return;}try{cv.toBlob(function(b){cb(b);},'image/png');}catch(e){cb(null);}}
 var SYS='你是「小智」，台灣貴格會一位牧者的牧會助理。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。不替聖靈說話，不保證神的旨意。行政、公文、法規與會議類內容保持專業語氣，不插入靈修用語；321理念只在牧養與勸勉類回覆中自然出現。格式：短標題與條列，不用表格與程式碼。';
 var CRISIS_RE=/自殺|輕生|不想活|想死|結束生命|了結自己|活不下去|傷害自己|自傷|割腕|跳樓|尋短|不想活了|活著沒意思|活著沒有意思|想消失|不如死了|一了百了|吞藥|燒炭|上吊|跳海|了斷|suicid|kill myself|end my life|want to die|self-harm/i;
 var ABUSE_RE=/家暴|毆打|性侵|性騷擾|猥褻|虐待|施暴|暴力相向|亂倫|兒虐|被打得|身上有傷|abuse|rape/i;
@@ -660,9 +775,9 @@ function buildMsgs(){var out=[],a=D.chat.slice(-12),i,m,role,c;
  while(out.length&&out[0].role!=='user')out.shift();return out;}
 function extract(d){if(!d)return '';if(typeof d==='string')return d;var t='',i;if(d.content&&d.content.length){for(i=0;i<d.content.length;i++)t+=d.content[i].text||'';if(t)return t;}
  return d.reply||d.text||d.message||(d.choices&&d.choices[0]&&d.choices[0].message?d.choices[0].message.content:'')||'';}
-function aiCall(msgs,model,max,cb,sys){var url=SET.proxy||PROXY,tries=0,dl=[900,1800];
+function aiCall(msgs,model,max,cb,sys,ms){var url=SET.proxy||PROXY,tries=0,dl=[900,1800];
  if(navigator.onLine===false){cb(new Error('目前離線'));return;}
- function go(){var ac=window.AbortController?new AbortController():null,to=setTimeout(function(){if(ac)ac.abort();},75000);
+ function go(){var ac=window.AbortController?new AbortController():null,to=setTimeout(function(){if(ac)ac.abort();},ms||75000);
   fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:model,max_tokens:max,system:sys||(SYS+styleSys()),messages:msgs}),signal:ac?ac.signal:undefined})
   .then(function(r){clearTimeout(to);if(!r.ok)throw new Error('http '+r.status);return r.json();})
   .then(function(d){cb(null,d);})
@@ -788,6 +903,27 @@ stsave:function(){styRead();var L=styleList(),i;for(i=0;i<L.length;i++)if(L[i].i
 stdel:function(){if(!confirm('刪除這個風格？'))return;var id=STY.e&&STY.e.id;D.styles=styleList().filter(function(x){return x.id!==id;});if(D.style===id)D.style='';save();STY.e=null;stySheet();},
 stfile:function(){styRead();var inp=$('styfile');if(!inp){inp=document.createElement('input');inp.type='file';inp.id='styfile';inp.accept='.txt,.md,.html,.htm';inp.style.display='none';document.body.appendChild(inp);}
  inp.onchange=function(){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;var fr=new FileReader();fr.onload=function(){var t=String(fr.result||'');if(/\.html?$/i.test(f.name))t=t.replace(/<[^>]+>/g,' ');STY.e.text=((STY.e.text||'')+'\n\n'+t).trim();stySheet();};fr.readAsText(f);};inp.click();},
+mtopen:function(){if(!MT.busy){MT.doc='';MT.err='';MT.mod='';}openSheet('🧩 做成小工具',mtHtml());},
+mtchip:function(el){MT.q=el.getAttribute('data-v')||'';var t=$('mt_q');if(t)t.value=MT.q;},mtmore:function(){mtRead();MT.co+=6;mtPaint();},
+mtgo:function(){mtRead();var q=(MT.q||'').trim();if(!q){toast('請先描述想要的小工具');return;}mtMake('',q);},
+mtmod:function(){mtRead();var m=(MT.mod||'').trim();if(!m||!MT.doc)return;toast('修改中…');mtMake(MT.doc,m);},
+mtbig:function(){mtBig();},mtbigx:function(){var w=$('mtbig');if(w)w.parentNode.removeChild(w);},
+mtdl:function(){if(MT.doc)dlBlob(new Blob([MT.doc],{type:'text/html'}),safeName(MT.title,'.html'));},mtsh:function(){if(MT.doc)fileOut(new Blob([MT.doc],{type:'text/html'}),safeName(MT.title,'.html'));},
+mtsave:function(){if(!MT.doc)return;if(!D.tools)D.tools=[];D.tools.unshift({id:'t'+Date.now().toString(36),title:MT.title,doc:MT.doc});if(D.tools.length>10)D.tools=D.tools.slice(0,10);MT.saved=true;save();mtPaint();toast('已存到我的小工具');},
+mtnew:function(){MT.doc='';MT.q='';MT.mod='';MT.err='';mtPaint();},
+mtload:function(el){var id=el.getAttribute('data-id'),L=D.tools||[],i;for(i=0;i<L.length;i++)if(L[i].id===id){MT.doc=L[i].doc;MT.title=L[i].title;MT.saved=true;MT.mod='';}mtPaint();},
+mtdel:function(el){if(!confirm('刪除這個小工具？'))return;var id=el.getAttribute('data-id');D.tools=(D.tools||[]).filter(function(x){return x.id!==id;});save();mtPaint();},
+mtldl:function(el){var id=el.getAttribute('data-id'),L=D.tools||[],i;for(i=0;i<L.length;i++)if(L[i].id===id)dlBlob(new Blob([L[i].doc],{type:'text/html'}),safeName(L[i].title,'.html'));},
+slopen:function(){if(!SL.busy){SL.blob=null;SL.err='';}openSheet('📽 製作投影片',slHtml());},
+slmine:function(){slRead();var i;for(i=D.chat.length-1;i>=0;i--)if(D.chat[i].r==='a'&&D.chat[i].raw&&!D.chat[i].err){SL.src=D.chat[i].raw;break;}slPaint();},
+slgo:function(){slGo();},slshare:function(){if(SL.blob)fileOut(SL.blob,SL.name);},sldl:function(){if(SL.blob)dlBlob(SL.blob,SL.name);},slagain:function(){SL.blob=null;SL.src='';SL.title='';slPaint();},
+cdopen:function(){cdSheet();},cdtype:function(el){cdRead();CD.t=el.getAttribute('data-k');cdSheet();},cdtpl:function(el){cdRead();CD.p=+el.getAttribute('data-k');cdSheet();},
+cdwrite:function(){cdRead();var T=null,i;for(i=0;i<CDT.length;i++)if(CDT[i][0]===CD.t)T=CDT[i];
+ var ask='請為「'+T[1]+'」卡片寫一段祝福的話，80 字內，溫暖、口語、不說教，用繁體中文。'+(CD.to.trim()?'這張卡是寫給「'+deid(CD.to).t+'」的，請直接對他說話，但不要再寫一次稱呼。':'')+(CD.vs.trim()?'卡片上另有經文 '+CD.vs.trim()+'，不要重抄經文。':'')+'結尾只用「阿們」，不要寫「奉主耶穌的名禱告」。只輸出祝福的話本身，不要標題、引號。';
+ toast('小智正在寫…');aiCall([{role:'user',content:ask}],M_FAST,500,function(err,d){var t=err?'':String(extract(d)||'').replace(/[*#>`]/g,'').replace(/^[「"]|[」"]$/g,'').trim();
+  if(!t){toast('寫不出來，請再試一次');return;}CD.txt=unlabel(t).replace(/奉[主]?耶穌[基督]*的名[禱祈][告求]*[，,、]?\s*/g,'');if($('cdmk'))cdSheet();});},
+cdshare:function(){cdRead();cdDraw();cdBlob(function(b){if(!b){toast('圖片產生失敗');return;}fileOut(b,safeName('卡片','.png'));});},
+cddl:function(){cdRead();cdDraw();cdBlob(function(b){if(!b){toast('圖片產生失敗');return;}dlBlob(b,safeName('卡片','.png'));});},
 tbopen:function(){openSheet('🧰 牧養工具箱',tbHtml());},tbtool:function(el){tbForm(el.getAttribute('data-k'));},tbgo:function(el){tbSend(el.getAttribute('data-k'));},chip:function(el){var ta=$('cin');ta.value='/'+el.getAttribute('data-c')+' ';draft=ta.value;ta.focus();},
 send:function(){sendChat();},
 clrchat:function(){if(!confirm('清除所有對話？'))return;D.chat=[];save();render();},
@@ -828,7 +964,7 @@ document.addEventListener('input',function(e){if(e.target&&e.target.id==='cin')d
 document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();if(D)flush();if(upAvail&&idleNow()){var tr='';try{tr=sessionStorage.getItem('pca_try');}catch(e){}if(!tr)applyUpdate();}}
  else{if(D&&hiddenAt&&Date.now()-hiddenAt>SET.lockMin*60000)lockNow();hiddenAt=0;checkUpdate(false);}});
 window.addEventListener('pagehide',function(){if(D)flush();});
-window.PCA={mt:function(k,v){var m=getMt(V.id);if(m){m[k]=v;save();}},sv:function(k,v){var m=getS(V.id);if(m){m[k]=v;save();}},flist:function(){var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gb:function(v){GB=v;var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gs:function(){var e=$('gres');if(e&&D)e.innerHTML=gsHtml(val('gq'));},
+window.PCA={cd:function(){cdRead();cdDraw();},mt:function(k,v){var m=getMt(V.id);if(m){m[k]=v;save();}},sv:function(k,v){var m=getS(V.id);if(m){m[k]=v;save();}},flist:function(){var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gb:function(v){GB=v;var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gs:function(){var e=$('gres');if(e&&D)e.innerHTML=gsHtml(val('gq'));},
  ex:function(i,v){var r=dayRec(today());if(!r.ex)r.ex=['','',''];r.ex[i]=v;save();toast('已儲存');},
  exqs:function(i,v){SET.exq=SET.exq||['','',''];SET.exq[i]=v.trim();saveSet();toast('已儲存');},
  pn:function(v){D.set.pname=v.trim();save();toast('已儲存');},lk:function(v){SET.lockMin=+v||5;saveSet();resetIdle();},
