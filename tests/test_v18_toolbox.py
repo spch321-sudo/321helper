@@ -17,7 +17,7 @@ try:
     pg.click('#tabs [data-t=chat]');pg.click('[data-act=aion]');pg.wait_for_selector('#cin')
     assert pg.locator('.cmds [data-act=tbopen]').count()==0
     pg.click('#tabs [data-t=mini]');pg.click('#main [data-act=tbopen]');pg.wait_for_selector('.tbg')
-    assert pg.locator('.tbg button').count()==18
+    assert pg.locator('.tbg button').count()==19
     for x in ['探訪預備','傳福音談道預備','講章大綱','小組帶領單','代禱信／感謝信','婚禮祝福','追思致詞']:assert x in pg.inner_text('.tbg'),x
     pg.screenshot(path='/tmp/toolbox.png')
     pg.click('.tbg [data-k=visit]');pg.wait_for_selector('#tb_who')

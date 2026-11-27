@@ -36,15 +36,16 @@ try:
     def box():
         if pg.locator('#sheet.show').count(): pg.click('#sheet [data-act=close]')
         pg.click('#tabs [data-t=mini]');pg.click('#main [data-act=tbopen]');pg.wait_for_selector('.tbg')
-    box();assert pg.locator('.tbg button').count()==18,pg.locator('.tbg button').count()
-    for x in ['編寫週報','寫牧養短文','寫靈修小品','事工計劃表','財務報表','製作投影片','製作卡片','做成小工具']:assert x in pg.inner_text('.sc'),x
+    box();assert pg.locator('.tbg button').count()==19,pg.locator('.tbg button').count()
+    for x in ['編寫週報','寫牧養短文','寫靈修小品','事工計劃表','財務報表','製作投影片','製作卡片','做成小工具','設計提示詞']:assert x in pg.inner_text('.sc'),x
     pg.screenshot(path='/tmp/toolbox3.png',full_page=True)
     # text tools reach the model with their spec
-    for k,first,marker in [('week','items','教會週報'),('pshort','topic','牧養短文'),('devo','t','靈修小品'),('plan','m','事工計劃表'),('fin','per','收支報表')]:
+    for k,first,marker in [('week','items','教會週報'),('pshort','topic','牧養短文'),('devo','t','靈修小品'),('plan','m','事工計劃表'),('fin','per','收支報表'),('prm','need','提示詞')]:
         pg.click('.tbg [data-k=%s]'%k);pg.fill('#tb_%s'%first,'測試內容 0912345678');pg.click('[data-act=tbgo]')
-        pg.wait_for_selector('#cin');pg.wait_for_function("document.querySelectorAll('.msg.a').length>=%d"%(['week','pshort','devo','plan','fin'].index(k)+1))
+        pg.wait_for_selector('#cin');pg.wait_for_function("document.querySelectorAll('.msg.a').length>=%d"%(['week','pshort','devo','plan','fin','prm'].index(k)+1))
         c=sent[-1]['messages'][-1]['content'];assert marker in c and '0912345678' not in c,(k,c[:80])
-        if k!='fin': box()
+        if k=='prm': sy=sent[-1]['system']+sent[-1]['messages'][-1]['content'] if isinstance(sent[-1]['messages'][-1]['content'],str) else sent[-1]['system'];assert '提示詞開始' in sy and '不需要引用經文' in sy and '完整引用經文' not in sy
+        box()
     # mini tool
     box();pg.click('[data-act=mtopen]');pg.click('[data-act=mtgo]');assert pg.locator('#mt_q').count()==1
     pg.click('[data-act=mtchip] >> nth=0');assert pg.input_value('#mt_q')
