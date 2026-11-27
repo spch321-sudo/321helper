@@ -89,7 +89,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.10.7';
+var APPVER='1.10.8';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -263,11 +263,17 @@ function styMake(){styRead();var nm=(STY.e.name||'').trim()||'寫作風格',tx=(
 /* 長篇講章逐字稿 */
 var LG=null;
 function lgChars(m){return m*270;}
+var OPTSEL={};
+var LGO=[['occ','場合',['主日講道','週間聚會','小組','青少年','兒童','長輩','特別節期']],['type','講章類型',['逐節解經','主題式','敘事','福音性','生命見證']],['focus','重點方向',['認識神','生命更新','服事','家庭','禱告','盼望','謙卑無己']],['style','講述風格',['口語親切','莊重','多說故事','多用比喻','多舉生活例子']],['end','結尾',['呼召回應','結束禱告','本週操練']]];
+var SLO=[['use','用途',['主日講道','小組教學','營會','兒童主日學','見證分享','培訓課程']],['n','張數',['5–6 張','7–10 張','11–12 張']],['style','風格',['簡潔大字','重點條列','經文為主','帶討論問題']],['end','結尾',['禱告','本週操練','呼召回應','討論題']]];
+var MTO=[['kind','類型',['計算機','計劃或排班表','表單或清單','抽籤或點名','計時器','小遊戲或測驗','倒數或日曆']],['aud','給誰用',['自己','小組','全教會','長輩','兒童']],['style','風格',['簡潔大按鈕','可愛活潑','莊重']]];
+function optHtml(pf,G){var o='<div class="note">先點選項（可多選，也可略過）：</div>',gi,oi,sel=OPTSEL[pf]||{},on;for(gi=0;gi<G.length;gi++){o+='<div class="sm" style="margin-top:.4rem"><b>'+esc(G[gi][1])+'</b></div><div class="row" style="flex-wrap:wrap;gap:.35rem;margin-top:.2rem">';for(oi=0;oi<G[gi][2].length;oi++){on=(sel[G[gi][0]]||[]).indexOf(G[gi][2][oi])>=0;o+=btn('gopt',G[gi][2][oi],(on?'pri ':'')+'sm2','data-p="'+pf+'" data-g="'+G[gi][0]+'" data-v="'+esc(G[gi][2][oi])+'"');}o+='</div>';}return o;}
+function optText(pf,G){var sel=OPTSEL[pf]||{},a=[],gi;for(gi=0;gi<G.length;gi++)if((sel[G[gi][0]]||[]).length)a.push(G[gi][1]+'：'+sel[G[gi][0]].join('、'));return a.join('；');}
 function lgHtml(){var L=LG||{},o='<i id="lgmk"></i>',i;
  if(L.stage==='outline')return o+'<div class="note">小智正在擬大綱…</div>';
  if(L.stage==='edit')return o+'<div class="sm">可以直接修改大綱（每個「## 」是一段）。</div><textarea id="lg_ol" rows="14">'+esc(L.outline||'')+'</textarea><div style="margin-top:.5rem">'+btn('lgwrite','照這個大綱寫全文','pri blk')+'</div>';
  if(L.stage==='write')return o+'<div class="note">正在寫第 '+(L.k+1)+' 段… （'+(L.k+1)+' / '+L.n+'）</div><div class="bar"><i style="width:'+Math.round(100*L.k/Math.max(1,L.n))+'%"></i></div><div style="margin-top:.5rem">'+btn('lgstop','停止並保留已寫的','sm2')+'</div>';
- o+='<div class="sm">先產出大綱讓你修改確認，再一段一段寫成完整逐字稿，完成後放進小智對話。</div><div class="fld"><label for="lg_p">經文（例如：約翰福音 15:1-8）</label><input id="lg_p" value="'+esc(L.p||'')+'"></div><div class="fld"><label for="lg_t">主題、場合與會眾（可不填）</label><input id="lg_t" value="'+esc(L.t||'')+'"></div><div class="row">';
+ o+='<div class="sm">先產出大綱讓你修改確認，再一段一段寫成完整逐字稿，完成後放進小智對話。</div>'+optHtml('lg',LGO)+'<div class="fld"><label for="lg_p">經文（例如：約翰福音 15:1-8）</label><input id="lg_p" value="'+esc(L.p||'')+'"></div><div class="fld"><label for="lg_t">主題、場合與會眾（可不填）</label><input id="lg_t" value="'+esc(L.t||'')+'"></div><div class="row">';
  [20,30,40].forEach(function(n){o+=btn('lgmin',n+' 分鐘',((L.m||30)===n?'pri ':'')+'sm2','data-i="'+n+'"')+' ';});
  var a=styleAct();return o+'</div>'+(a?'<div class="note">✍️ 用我的寫作風格：'+esc(a.name)+'</div>':'')+'<div style="margin-top:.6rem">'+btn('lgout','先產出大綱','pri blk')+'</div>';}
 function lgPaint(){if(LG&&$('lgmk'))openSheet('📜 長篇講章逐字稿',lgHtml());}
@@ -275,7 +281,7 @@ function lgOpen(){if(!LG||LG.stage==='')LG={p:(LG&&LG.p)||'',t:(LG&&LG.t)||'',m:
 function lgRead(){var a=$('lg_p'),b=$('lg_t');if(a)LG.p=a.value.trim();if(b)LG.t=b.value.trim();}
 function lgOutline(){lgRead();if(!LG.p){toast('請先填經文');return;}
  var d1=deid(LG.p),d2=deid(LG.t||'');LG.stage='outline';lgPaint();
- var ask='請用繁體中文寫一份講章「大綱」，講道長度 '+LG.m+' 分鐘（寫成全文約 '+lgChars(LG.m)+' 字）。經文：'+d1.t+(d2.t?'。主題、場合、會眾：'+d2.t:'')+'。格式：第一行「# 」加標題；接著 5 到 7 段，每段以「## 」加段落標題並在括號標出目標分鐘數，後面接 2 到 4 個條列，說明該段涵蓋的內容（要引用的經文、比喻構想、應用）。要有引言、主要要點、321 生命應用，以及含回應與結束禱告的結論。只輸出大綱。';
+ var ask='請用繁體中文寫一份講章「大綱」，講道長度 '+LG.m+' 分鐘（寫成全文約 '+lgChars(LG.m)+' 字）。經文：'+d1.t+(d2.t?'。主題、場合、會眾：'+d2.t:'')+(optText('lg',LGO)?'。使用者選的偏好（請照辦）：'+optText('lg',LGO):'')+'。格式：第一行「# 」加標題；接著 5 到 7 段，每段以「## 」加段落標題並在括號標出目標分鐘數，後面接 2 到 4 個條列，說明該段涵蓋的內容（要引用的經文、比喻構想、應用）。要有引言、主要要點、321 生命應用，以及含回應與結束禱告的結論。只輸出大綱。';
  aiCall([{role:'user',content:ask}],M_DEEP,1800,function(err,d){var t=err?'':String(extract(d)||'').trim();
   if(err||t.indexOf('##')<0){LG.stage='';toast('大綱沒有產出，請再試一次');}else{LG.outline=t;LG.stage='edit';}lgPaint();});}
 function lgWrite(){var ta=$('lg_ol');if(ta)LG.outline=ta.value.trim();
@@ -358,7 +364,7 @@ function mtTitle(doc,fb){var m=String(doc||'').match(/<title[^>]*>([\s\S]*?)<\/t
 function mtHtml(){var o='<i id="mtmk"></i>',i,L=D.tools||[],k;
  o+='<div class="sm">一句話描述，小智幫你做成能用的網頁小工具。</div>';
  if(!MT.doc||MT.busy){
-  o+='<textarea id="mt_q" rows="3" maxlength="300" placeholder="例如：幫我做一個小組奉獻金額加總計算機"'+(MT.busy?' disabled':'')+'>'+esc(MT.q)+'</textarea>';
+  o+=(MT.busy?'':optHtml('mt',MTO))+'<textarea id="mt_q" rows="3" maxlength="300" placeholder="例如：幫我做一個小組奉獻金額加總計算機"'+(MT.busy?' disabled':'')+'>'+esc(MT.q)+'</textarea>';
   if(!MT.busy){o+='<div class="sm" style="margin-top:.4rem">試試看：</div><div class="row" style="flex-wrap:wrap;gap:.35rem">';for(i=0;i<6;i++)k=MTCH[(MT.co+i)%MTCH.length],o+=btn('mtchip',esc(k),'sm2','data-v="'+esc(k)+'"');o+=btn('mtmore','🔄 換一批','sm2')+'</div>';}
   o+='<div style="margin-top:.6rem">'+btn('mtgo',MT.busy?'小智正在製作…（約 20–90 秒）':'做成小工具','pri blk',MT.busy?'disabled':'')+'</div>';
   if(MT.err&&!MT.busy)o+='<div class="note warn">'+esc(MT.err)+'</div>';
@@ -389,13 +395,13 @@ function slHtml(){var o='<i id="slmk"></i>';
  if(SL.busy)return o+'<div class="note">小智正在整理投影片…（約 20–60 秒）</div>';
  if(SL.blob)return o+'<div class="card"><b>投影片完成了</b><div class="sm">'+esc(SL.name)+'</div></div><div class="row" style="margin-top:.6rem">'+btn('slshare','分享／存檔','pri sm2')+' '+btn('sldl','下載','sm2')+' '+btn('slagain','再做一份','sm2')+'</div>';
  var last=null,i;for(i=D.chat.length-1;i>=0;i--)if(D.chat[i].r==='a'&&D.chat[i].raw&&!D.chat[i].err){last=D.chat[i];break;}
- return o+'<div class="sm">貼上講章、大綱或要講的內容，或只寫主題與經文，小智整理成 16:9 的投影片（.pptx），用 PowerPoint、Keynote 或 Google 簡報都能開。</div><div class="fld"><label for="sl_t">標題（可不填）</label><input id="sl_t" value="'+esc(SL.title)+'"></div><div class="fld"><label for="sl_s">內容或主題</label><textarea id="sl_s" rows="9">'+esc(SL.src)+'</textarea></div>'+(last?'<div class="row">'+btn('slmine','帶入最近一則小智回答','sm2')+'</div>':'')+'<div class="note">內容會先去除會友姓名與電話再送出。第一次使用需要網路載入簡報元件。</div>'+(SL.err?'<div class="note warn">'+esc(SL.err)+'</div>':'')+'<div style="margin-top:.6rem">'+btn('slgo','製作投影片','pri blk')+'</div>';}
+ return o+'<div class="sm">貼上講章、大綱或要講的內容，或只寫主題與經文，小智整理成 16:9 的投影片（.pptx），用 PowerPoint、Keynote 或 Google 簡報都能開。</div>'+optHtml('sl',SLO)+'<div class="fld"><label for="sl_t">標題（可不填）</label><input id="sl_t" value="'+esc(SL.title)+'"></div><div class="fld"><label for="sl_s">內容或主題</label><textarea id="sl_s" rows="9">'+esc(SL.src)+'</textarea></div>'+(last?'<div class="row">'+btn('slmine','帶入最近一則小智回答','sm2')+'</div>':'')+'<div class="note">內容會先去除會友姓名與電話再送出。第一次使用需要網路載入簡報元件。</div>'+(SL.err?'<div class="note warn">'+esc(SL.err)+'</div>':'')+'<div style="margin-top:.6rem">'+btn('slgo','製作投影片','pri blk')+'</div>';}
 function slPaint(){if($('slmk'))openSheet('📽 製作投影片',slHtml());}
 function slRead(){var a=$('sl_s'),b=$('sl_t');if(a)SL.src=a.value;if(b)SL.title=b.value;}
 function slLib(cb){if(window.PptxGenJS){cb(true);return;}var sc=document.createElement('script');sc.src='pptxgen.bundle.js';sc.onload=function(){cb(!!window.PptxGenJS);};sc.onerror=function(){cb(false);};document.head.appendChild(sc);}
 function slGo(){slRead();var src=(SL.src||'').trim();if(src.length<4){toast('請先寫內容或主題');return;}
  SL.busy=true;SL.err='';slPaint();
- var ask='請把下面的內容整理成講道或教學的投影片，用繁體中文。只回傳 JSON：{"title":"","subtitle":"","slides":[{"t":"投影片標題","p":["短重點"],"v":"完整經文或空字串","r":"經文出處或空字串"}]}。7 到 10 張，依序涵蓋內容的每個主要部分（主旨、重要經文、關鍵詞、應用、本週操練、結束禱告，視內容而定）；每張最多 4 個重點，每個重點 20 字內；經文投影片可以沒有重點；經文照原內容引用（和合本）；每個欄位都要短，讓整份 JSON 精簡完整；最後一張是簡短的應用或禱告。'+(SL.title?'\n標題：'+deid(SL.title).t:'')+'\n內容：\n'+deid(src).t.slice(0,6000);
+ var ask='請把下面的內容整理成講道或教學的投影片，用繁體中文。只回傳 JSON：{"title":"","subtitle":"","slides":[{"t":"投影片標題","p":["短重點"],"v":"完整經文或空字串","r":"經文出處或空字串"}]}。7 到 10 張，依序涵蓋內容的每個主要部分（主旨、重要經文、關鍵詞、應用、本週操練、結束禱告，視內容而定）；每張最多 4 個重點，每個重點 20 字內；經文投影片可以沒有重點；經文照原內容引用（和合本）；每個欄位都要短，讓整份 JSON 精簡完整；最後一張是簡短的應用或禱告。'+(SL.title?'\n標題：'+deid(SL.title).t:'')+(optText('sl',SLO)?'\n使用者選的偏好（張數以此為準，其餘盡量照辦）：'+optText('sl',SLO):'')+'\n內容：\n'+deid(src).t.slice(0,6000);
  function fail(m){SL.busy=false;SL.err=m;slPaint();}
  aiCall([{role:'user',content:ask}],M_DEEP,3600,function(err,d){
   if(err){fail('整理失敗（'+(err.name==='AbortError'?'等太久了':err.message)+'），請再試一次。');return;}
@@ -979,7 +985,7 @@ stfile:function(){styRead();var inp=$('styfile');if(!inp){inp=document.createEle
  inp.onchange=function(){var f=inp.files&&inp.files[0];inp.value='';if(!f)return;var fr=new FileReader();fr.onload=function(){var t=String(fr.result||'');if(/\.html?$/i.test(f.name))t=t.replace(/<[^>]+>/g,' ');STY.e.text=((STY.e.text||'')+'\n\n'+t).trim();stySheet();};fr.readAsText(f);};inp.click();},
 mtopen:function(){if(!MT.busy){MT.doc='';MT.err='';MT.mod='';}openSheet('🧩 做成小工具',mtHtml());},
 mtchip:function(el){MT.q=el.getAttribute('data-v')||'';var t=$('mt_q');if(t)t.value=MT.q;},mtmore:function(){mtRead();MT.co+=6;mtPaint();},
-mtgo:function(){mtRead();var q=(MT.q||'').trim();if(!q){toast('請先描述想要的小工具');return;}mtMake('',q);},
+mtgo:function(){mtRead();var q=(MT.q||'').trim(),ot=optText('mt',MTO);if(!q&&!ot){toast('請先描述想要的小工具，或點選上面的選項');return;}mtMake('',(q||'請依選項做一個實用的小工具')+(ot?'（偏好：'+ot+'）':''));},gopt:function(el){var pf=el.getAttribute('data-p'),g=el.getAttribute('data-g'),v=el.getAttribute('data-v'),a;OPTSEL[pf]=OPTSEL[pf]||{};a=OPTSEL[pf][g]=OPTSEL[pf][g]||[];var i=a.indexOf(v);if(i>=0){a.splice(i,1);el.className=el.className.replace(/\bpri\s*/,'');}else{a.push(v);el.className='pri '+el.className;}},
 mtmod:function(){mtRead();var m=(MT.mod||'').trim();if(!m||!MT.doc)return;toast('修改中…');mtMake(MT.doc,m);},
 mtbig:function(){mtBig();},mtbigx:function(){var w=$('mtbig');if(w)w.parentNode.removeChild(w);},
 mtdl:function(){if(MT.doc)dlBlob(new Blob([MT.doc],{type:'text/html'}),safeName(MT.title,'.html'));},mtsh:function(){if(MT.doc)fileOut(new Blob([MT.doc],{type:'text/html'}),safeName(MT.title,'.html'));},

@@ -43,7 +43,8 @@ try:
     n0=len(sent)
     pg.click('#tabs [data-t=mini]');pg.click('#main [data-act=tbopen]');pg.click('[data-act=lgopen]')
     pg.click('[data-act=lgout]');assert pg.locator('#lg_p').count()==1                        # needs passage
-    pg.fill('#lg_p','約翰福音 15:1-8');pg.click('[data-act=lgmin][data-i="20"]');pg.click('[data-act=lgout]');pg.wait_for_selector('#lg_ol')
+    pg.click('[data-act=gopt][data-p=lg][data-v="小組"]');pg.fill('#lg_p','約翰福音 15:1-8');pg.click('[data-act=lgmin][data-i="20"]');pg.click('[data-act=lgout]');pg.wait_for_selector('#lg_ol')
+    assert '場合：小組' in sent[-1]['messages'][-1]['content'] if 'sent' in dir() else True
     assert '## 引言' in pg.input_value('#lg_ol')
     pg.click('[data-act=lgwrite]');pg.wait_for_selector('#cin',timeout=20000);pg.wait_for_selector('.msg.a:has-text("逐字稿內容")')
     assert len(sent)-n0==1+3, len(sent)-n0

@@ -57,7 +57,8 @@ try:
     # mini tool
     box();pg.click('[data-act=mtopen]');pg.click('[data-act=mtgo]');assert pg.locator('#mt_q').count()==1
     pg.click('[data-act=mtchip] >> nth=0');assert pg.input_value('#mt_q')
-    pg.click('[data-act=mtgo]');pg.wait_for_selector('#mtfr',timeout=20000)
+    pg.click('.sc [data-act=gopt][data-p=mt][data-v="計算機"]');pg.click('.sc [data-act=gopt][data-p=mt][data-v="長輩"]')
+    pg.click('[data-act=mtgo]');pg.wait_for_selector('#mtfr',timeout=20000);assert '類型：計算機；給誰用：長輩' in sent[-1]['messages'][-1]['content']
     fr=pg.frame_locator('#mtfr');fr.locator('#a').fill('21');fr.locator('button').click();assert fr.locator('#r').inner_text()=='42'
     with pg.expect_download() as dl: pg.click('[data-act=mtdl]')
     assert dl.value.suggested_filename.endswith('.html')
@@ -68,11 +69,13 @@ try:
     pg.click('[data-act=mtnew]');pg.click('[data-act=mtload]');pg.wait_for_selector('#mtfr')
     # slides
     box();pg.click('[data-act=slopen]');pg.click('[data-act=slgo]');assert pg.locator('#sl_s').count()==1
+    pg.click('.sc [data-act=gopt][data-p=sl][data-v="小組教學"]');pg.click('.sc [data-act=gopt][data-p=sl][data-v="禱告"]');pg.click('.sc [data-act=gopt][data-p=sl][data-v="禱告"]')
     pg.fill('#sl_s','約翰福音 15 葡萄樹的講章');pg.click('[data-act=slmine]');pg.fill('#sl_s','約翰福音 15 葡萄樹的講章');pg.click('[data-act=slgo]')
     pg.wait_for_selector('[data-act=sldl]',timeout=30000)
     with pg.expect_download() as d2: pg.click('[data-act=sldl]')
     f=d2.value;assert f.suggested_filename.endswith('.pptx');path=f.path();import zipfile
     z=zipfile.ZipFile(path);assert any(n.startswith('ppt/slides/slide') for n in z.namelist()) and len([n for n in z.namelist() if re.match(r'ppt/slides/slide\d+\.xml',n)])==4
+    assert '用途：小組教學' in sent[-1]['messages'][-1]['content'] and '結尾：' not in sent[-1]['messages'][-1]['content'].split('偏好')[1].split('內容')[0]
     # card
     box();pg.click('[data-act=cdopen]');pg.wait_for_selector('#cdcv');pg.fill('#cd_to','林姊妹');pg.fill('#cd_tx','生日快樂，主祝福你。')
     pg.click('[data-act=cdtpl][data-k="rose"]');assert pg.input_value('#cd_to')=='林姊妹'
