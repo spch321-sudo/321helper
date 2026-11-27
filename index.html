@@ -65,6 +65,7 @@ label.chk{display:flex;gap:.6rem;align-items:center}label.chk input{width:1.3rem
 .note{font-size:.76rem;color:var(--sub);margin-top:.4rem}
 .cmds{display:flex;gap:.4rem;overflow-x:auto;padding:.3rem 0}.cmds button{flex:none}
 .cbar{position:sticky;bottom:0;background:var(--bg);padding:.4rem 0 .6rem}
+.appg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0}.appc{display:flex;flex-direction:column;gap:.15rem;background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:.7rem .8rem;color:inherit;text-decoration:none}.appi{width:2.3rem;height:2.3rem;border-radius:.6rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:.2rem}.appn{font-weight:700}.chip.cn{align-self:flex-start;background:#e3f1e3;color:#2e6b2e}
 .warn{color:var(--warn)}.ok{color:var(--ok)}
 .step{display:flex;gap:.6rem;padding:.45rem 0;align-items:flex-start}.step input{width:1.3rem;height:1.3rem;margin-top:.2rem;flex:none}
 .vs{border-left:3px solid var(--gold);padding:.1rem .7rem;margin:.5rem 0}.vs b{color:var(--gold)}
@@ -85,12 +86,12 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.6.0';
+var APPVER='1.7.0';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
 var D=null,KEY=null,SALT=null,SET={},V={tab:'today',sub:null,id:null},busy=false,draft='',saveT=null,idleT=null,hiddenAt=0,upAvail=false;
-var TABS=[['today','今日','☀️'],['flock','羊群','🐑'],['mini','事工','✝️'],['chat','小智','💬'],['me','我','⚙️']];
+var TABS=[['today','今日','☀️'],['flock','羊群','🐑'],['mini','事工','✝️'],['chat','小智','💬'],['app','App','🧩'],['me','我','⚙️']];
 var CATS=['新朋友','慕道友','會友','同工','長輩','青少年','兒童','其他'];
 var RHY=[[0,'預設（約每月）'],[7,'每週'],[14,'每兩週'],[30,'每月'],[60,'每兩個月'],[90,'每季'],[-1,'不提醒']];
 function rhyName(v){for(var i=0;i<RHY.length;i++)if(RHY[i][0]===(+v||0))return RHY[i][1];return '';}
@@ -463,6 +464,22 @@ function msgsHtml(){var o='',i,m;if(!D.chat.length)o='<div class="sub">您好，
   else if(m.err)o+='<div class="msg a warn">'+esc(m.t)+'</div>';
   else o+='<div class="msg a">'+md(m.t)+'<div class="note">小智是 AI，引用的經文與資料可能有誤，請以聖經為準並自行核對。</div>'+verSlot(m,i)+'<div style="margin-top:.4rem">'+btn('copy','複製','sm2','data-i="'+i+'"')+'</div></div>';}
  return o;}
+/* ---------- App tab ---------- */
+var BASE='https://spch321-sudo.github.io/';
+var APPS=[
+ ['讀經與靈修',1,[['晨讀321','每日晨讀靈修（繁體）','chendu321/','晨'],['晨讀321 简体','每日晨读灵修','chendu321-cn/','晨'],['晨讀321 EN','Morning devotion (English)','chendu321-en/','M'],['321互動聖經','朗讀、畫線、小智陪讀','bible/','經'],['落實321','把321理念活出來','321/','實'],['321每日得勝','每日規劃與得勝操練','321planner/','勝']]],
+ ['生活操練',1,[['321生命操練','每日舊人／新人操練','321life/','命'],['321健康新生活','NEW START 健康生活','321healthylife/','康'],['321屬靈生活','與主連結的日常','321spirituallife/','靈'],['321家庭生活','家庭中的321','321familylife/','家'],['321婚姻生活','夫妻同行','321marriagelife/','婚'],['321職場生活','職場得勝','321worklife/','職'],['321教會生活','教會與小家','321churchlife/','教'],['321社交生活','關係與人際','321sociallife/','交']]],
+ ['靈修與團契',0,[['國度321空中團契','聚會、最新消息與奉獻','321fellowship/','團'],['321舊約導讀','逐章舊約導讀','321ot/','舊'],['321靈修會主','新約靈修會主文稿','321devotion/','修']]]];
+var AITOOLS=[['Kimi','月之暗面 AI 助手','https://www.kimi.com/',1],['ChatGPT','OpenAI AI 助手','https://chatgpt.com/',0],['DeepSeek','深度求索 AI 助手','https://chat.deepseek.com/',1],['Claude','Anthropic AI 助手','https://claude.ai/',0],['豆包','字節跳動 AI 助手','https://www.doubao.com/',1],['Gemini','Google AI 助手','https://gemini.google.com/',0]];
+function appCard(n,sub,url,ic,cn){return '<a class="appc" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><span class="appi">'+esc(ic)+'</span><span class="appn">'+esc(n)+' ↗</span><span class="sm">'+esc(sub)+'</span>'+(cn?'<span class="chip cn">中國可用</span>':'')+'</a>';}
+function vApp(){var o='<h1>App</h1><div class="sub">321 的各個 App 與外部 AI 工具。點一下會用瀏覽器開啟。</div>',i,j,g,a;
+ for(i=0;i<APPS.length;i++){g=APPS[i];o+='<h2>'+esc(g[0])+'</h2>';
+  if(!g[1])o+='<details><summary class="sm">展開（'+g[2].length+' 個）</summary>';
+  o+='<div class="appg">';for(j=0;j<g[2].length;j++){a=g[2][j];o+=appCard(a[0],a[1],BASE+a[2],a[3],0);}o+='</div>';
+  if(!g[1])o+='</details>';}
+ o+='<h2>AI 工具</h2><div class="sub">外部的 AI 助手，可幫忙讀長文、整理資料、預備信息。</div><div class="note warn">這些是外部網站，不在牧會助理的保護範圍內。請不要貼上會友的姓名、電話、住址或敏感紀錄；需要時，請先自行去識別。</div><div class="appg">';
+ for(i=0;i<AITOOLS.length;i++){a=AITOOLS[i];o+=appCard(a[0],a[1],a[2],a[0].charAt(0),a[3]);}
+ return o+'</div><div class="note">「中國可用」是一般情況下的標示，各地網路環境不同，請以實際為準。</div>';}
 function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i++)if(D.cares[i].date.slice(0,7)===t.slice(0,7))mc++;
  o+='<div class="card"><div class="grid2"><div><div class="big">'+D.members.length+'</div><div class="sm">羊群人數</div></div><div><div class="big">'+mc+'</div><div class="sm">本月關懷紀錄</div></div></div></div>';
  o+='<h2>基本</h2><div class="card">'+fld('s_pn','稱呼（問安時使用）','<input id="s_pn" value="'+esc(D.set.pname||'')+'" onchange="window.PCA.pn(this.value)">')+'</div>';
@@ -475,7 +492,7 @@ function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i+
  o+='<div style="margin-top:1.5rem">'+btn('wipe','清除全部資料','dng blk')+'</div>';return o;}
 function render(){if(!D){renderLock();return;}document.body.className='';var t=V.tab,o,m=$('main');
  if(V.sub==='search')o=vSearch();else if(V.sub==='member')o=vMember();else if(V.sub==='prayers')o=vPrayers();else if(V.sub==='flow')o=vFlow();else if(V.sub==='sermon')o=vSermon();else if(V.sub==='meeting')o=vMeeting();
- else o=t==='today'?vToday():t==='flock'?vFlock():t==='mini'?vMini():t==='chat'?vChat():vMe();
+ else o=t==='today'?vToday():t==='flock'?vFlock():t==='mini'?vMini():t==='chat'?vChat():t==='app'?vApp():vMe();
  m.innerHTML=o;if(t==='chat'&&!V.sub)fillVer();if(t==='chat'&&!V.sub)m.scrollTop=m.scrollHeight;else m.scrollTop=0;
  var tb='',i;for(i=0;i<TABS.length;i++)tb+='<button data-act="tab" data-t="'+TABS[i][0]+'" class="'+(TABS[i][0]===t?'on':'')+'"><span>'+TABS[i][2]+'</span>'+TABS[i][1]+'</button>';$('tabs').innerHTML=tb;}
 
