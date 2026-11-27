@@ -80,7 +80,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <body>
 <div id="app">
 <header id="hd"><b>321牧會助理</b><button id="lkb" data-act="lock">🔒 鎖定</button></header>
-<div id="updbar" hidden data-act="upd">有新版本，點此更新</div>
+<div id="updbar" hidden data-act="upd">有新版本，稍後將自動更新（也可點此立即更新）</div>
 <main id="main"></main>
 <nav id="tabs"></nav>
 </div>
@@ -89,11 +89,11 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.10.5';
+var APPVER='1.10.6';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
-var D=null,KEY=null,SALT=null,SET={},V={tab:'today',sub:null,id:null},busy=false,draft='',saveT=null,idleT=null,hiddenAt=0,upAvail=false;
+var D=null,KEY=null,SALT=null,SET={},V={tab:'today',sub:null,id:null},busy=false,draft='',saveT=null,idleT=null,hiddenAt=0,upAvail=false,upVer='',lastAct=Date.now();
 var TABS=[['today','今日','☀️'],['flock','羊群','🐑'],['mini','事工','✝️'],['chat','小智','💬'],['app','App','🧩'],['me','我','⚙️']];
 var CATS=['新朋友','慕道友','會友','同工','長輩','青少年','兒童','其他'];
 var RHY=[[0,'預設（約每月）'],[7,'每週'],[14,'每兩週'],[30,'每月'],[60,'每兩個月'],[90,'每季'],[-1,'不提醒']];
@@ -800,7 +800,7 @@ function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i+
  o+='<h2>小智（AI）</h2><div class="card"><label class="chk"><input type="checkbox" data-act="aitog"'+(SET.ai?' checked':'')+'><span>啟用小智</span></label><label class="chk"><input type="checkbox" data-act="pvtog"'+(SET.pv!==false?' checked':'')+'><span>送出前預覽去識別後的內容（建議開啟）</span></label><details><summary class="sm">進階</summary>'+fld('s_px','中繼網址（空白＝預設）','<input id="s_px" value="'+esc(SET.proxy||'')+'" onchange="window.PCA.set(\'proxy\',this.value)">')+fld('s_mf','快速模型','<input id="s_mf" value="'+esc(SET.mFast||M_FAST)+'" onchange="window.PCA.set(\'mFast\',this.value)">')+fld('s_md','深入模型','<input id="s_md" value="'+esc(SET.mDeep||M_DEEP)+'" onchange="window.PCA.set(\'mDeep\',this.value)">')+'</details></div>';
  o+='<h2>靈修與省察</h2><div class="card"><label class="chk"><input type="checkbox" data-act="sotog"'+(SET.so!==false?' checked':'')+'><span>顯示「與己」省察、牧者靈魂照顧與探訪禱告提示</span></label><details><summary class="sm">自訂語句</summary>'+[0,1,2].map(function(i){return fld('s_q'+i,'省察問題 '+(i+1),'<input id="s_q'+i+'" value="'+esc(exq(i))+'" onchange="window.PCA.exqs('+i+',this.value)">');}).join('')+fld('s_pre','探訪前禱告','<input id="s_pre" value="'+esc(pre())+'" onchange="window.PCA.set(\'pre\',this.value)">')+'<div class="note">語句可依你的牧養用語修改；清空會還原預設。內容只存在這支手機，不送給小智。</div></details></div>';
  o+='<h2>外觀</h2><div class="card">'+fld('s_fs','字級','<select id="s_fs" onchange="window.PCA.fs(this.value)">'+['標準','大','特大','超大'].map(function(n,k){return '<option value="'+k+'"'+(k===SET.font?' selected':'')+'>'+n+'</option>';}).join('')+'</select>')+'</div>';
- o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div class="sub">自動更新：已啟用。有新版時，會在您鎖定或離開 App 時自動更新。</div><div style="margin-top:.6rem">'+btn('upd','立即檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
+ o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div class="sub">自動更新：已啟用。有新版時，會在您鎖定、離開 App，或停手閒置約 30 秒後自動更新，資料會先存好，更新後重新輸入密碼即可。</div><div style="margin-top:.6rem">'+btn('upd','立即檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
  o+='<div style="margin-top:1.5rem">'+btn('wipe','清除全部資料','dng blk')+'</div>';return o;}
 function render(){if(!D){renderLock();return;}document.body.className='';var t=V.tab,o,m=$('main');
  if(V.sub==='search')o=vSearch();else if(V.sub==='member')o=vMember();else if(V.sub==='prayers')o=vPrayers();else if(V.sub==='flow')o=vFlow();else if(V.sub==='sermon')o=vSermon();else if(V.sub==='meeting')o=vMeeting();
@@ -1020,7 +1020,7 @@ document.addEventListener('click',function(e){var el=e.target,sh=$('sheet');
  if(!el||el===document)return;var f=A[el.getAttribute('data-act')];if(f){resetIdle();f(el);}});
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='impf'&&e.target.files&&e.target.files[0]){doImport(e.target.files[0]);e.target.value='';}});
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='cin')draft=e.target.value;});
-['pointerdown','keydown','scroll'].forEach(function(ev){document.addEventListener(ev,function(){if(D)resetIdle();},true);});
+['pointerdown','keydown','scroll'].forEach(function(ev){document.addEventListener(ev,function(){lastAct=Date.now();if(D)resetIdle();},true);});
 document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();if(D)flush();if(upAvail&&idleNow()){var tr='';try{tr=sessionStorage.getItem('pca_try');}catch(e){}if(!tr)applyUpdate();}}
  else{if(D&&hiddenAt&&Date.now()-hiddenAt>SET.lockMin*60000)lockNow();hiddenAt=0;checkUpdate(false);}});
 window.addEventListener('pagehide',function(){if(D)flush();});
@@ -1034,12 +1034,13 @@ window.PCA={cd:function(){cdRead();cdDraw();},mt:function(k,v){var m=getMt(V.id)
 /* ---------- update ---------- */
 function idleNow(){var a=document.activeElement;return D&&!busy&&!$('sheet').classList.contains('show')&&!draft&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));}
 function applyUpdate(){var go=function(){var u=location.pathname+'?u='+Date.now();location.replace(u);};if(D)flush().then(go,go);else go();}
+function autoTick(){if(!upAvail||!D||!idleNow()||Date.now()-lastAct<(window.PCA_UPIDLE||30000))return;var tr='';try{tr=sessionStorage.getItem('pca_try');}catch(e){}if(tr)return;try{sessionStorage.setItem('pca_try',upVer);}catch(e){}applyUpdate();}
 function checkUpdate(manual){if(navigator.onLine===false){if(manual)toast('目前離線');return;}
  fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
-  if(j&&j.version&&j.version!==APPVER){upAvail=true;var tried='';try{tried=sessionStorage.getItem('pca_try');}catch(e){}
+  if(j&&j.version&&j.version!==APPVER){upAvail=true;upVer=j.version;var tried='';try{tried=sessionStorage.getItem('pca_try');}catch(e){}
    if(tried===j.version){$('updbar').hidden=false;if(manual)toast('已有新版本，請點上方橫條更新');return;}
    if(!D||document.hidden||manual&&idleNow()){try{sessionStorage.setItem('pca_try',j.version);}catch(e){}applyUpdate();return;}
-   $('updbar').hidden=false;if(manual)toast('有新版本，將在鎖定或離開時自動更新');}
+   $('updbar').hidden=false;if(manual)toast('有新版本，閒置片刻或離開時會自動更新');}
   else{upAvail=false;$('updbar').hidden=true;if(manual)toast('已是最新版 v'+APPVER);}}).catch(function(){if(manual)toast('檢查失敗');});}
 $('updbar').addEventListener('click',function(){applyUpdate();});
 try{if(location.search.indexOf('u=')>=0)history.replaceState(null,'',location.pathname);}catch(e){}
@@ -1049,7 +1050,7 @@ function boot(){SET=loadSet();applyFont();
  if(!window.crypto||!crypto.subtle){document.body.className='locked';$('main').innerHTML='<div class="lock"><div class="logo">⚠️</div><h1>無法啟動</h1><div class="sub">此瀏覽器或網址不支援加密功能，請改用 https 網址（或 Safari／Chrome 新版）開啟。</div></div>';return;}
  storeInit().then(renderLock,renderLock);
  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(function(){});}catch(e){}}
- setTimeout(function(){checkUpdate(false);},3000);setInterval(function(){checkUpdate(false);},600000);}
+ setTimeout(function(){checkUpdate(false);},3000);setInterval(function(){checkUpdate(false);},window.PCA_UPPOLL||300000);setInterval(autoTick,window.PCA_UPTICK||15000);}
 document.addEventListener('keydown',function(e){if(e.key==='Enter'){var t=e.target;if(t&&t.id==='pw')doUnlock();else if(t&&(t.id==='pw1'||t.id==='pw2'))doSetup();}});
 boot();
 })();
