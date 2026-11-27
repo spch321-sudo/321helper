@@ -65,6 +65,7 @@ label.chk{display:flex;gap:.6rem;align-items:center}label.chk input{width:1.3rem
 .note{font-size:.76rem;color:var(--sub);margin-top:.4rem}
 .cmds{display:flex;gap:.4rem;overflow-x:auto;padding:.3rem 0}.cmds button{flex:none}
 .cbar{position:sticky;bottom:0;background:var(--bg);padding:.4rem 0 .6rem}
+.tbg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.6rem 0}.tbg button{display:flex;flex-direction:column;align-items:flex-start;gap:.15rem;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:1rem;padding:.7rem;color:inherit}.tbg span{font-size:1.5rem;line-height:1}.tbg small{font-size:.76rem;color:var(--sub);line-height:1.35}
 .appg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0}.appc{display:flex;flex-direction:column;gap:.15rem;background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:.7rem .8rem;color:inherit;text-decoration:none}.appi{width:2.3rem;height:2.3rem;border-radius:.6rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:.2rem}.appn{font-weight:700}.appfold{margin-top:12px}.appfold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 14px;border:1px dashed var(--line);border-radius:14px;background:var(--card);color:var(--brand);font-weight:700;font-size:.95rem}.appfold>summary::-webkit-details-marker{display:none}.appfold>summary::after{content:"▾"}.appfold[open]>summary::after{content:"▴"}.appfold>summary .le{display:none}.appfold[open]>summary .mo{display:none}.appfold[open]>summary .le{display:inline}.appfold[open]>summary{margin-bottom:12px}
 .warn{color:var(--warn)}.ok{color:var(--ok)}
 .step{display:flex;gap:.6rem;padding:.45rem 0;align-items:flex-start}.step input{width:1.3rem;height:1.3rem;margin-top:.2rem;flex:none}
@@ -86,7 +87,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.7.1';
+var APPVER='1.8.0';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -164,6 +165,38 @@ var CMDS={'探訪':{p:'請協助牧者預備一次探訪，依序給：1.探訪�
 '會議':{p:'請擬一份會議議程草稿：時間分配、討論事項、決議事項欄位、禱告開始與結束，並提醒可能的張力點。會議主題與人數：',m:0,t:900},
 '會記':{p:'請把以下會議紀錄整理成：1.重點摘要 2.決議事項（附建議負責人與期限，標明為建議）3.待追蹤事項 4.下次會議建議議題。不確定的地方標明，不要補寫未提到的內容。紀錄：',m:0,t:1200},
 '講綱':{p:'請提供一份講道大綱：主題句、三個要點（各附經文與一句應用）、一個比喻或例子、結語與呼召。忠於經文脈絡，不確定處標明。經文或主題：',m:1,t:1800}};
+var TB=[
+['visit','🏠','探訪預備','對象的狀況 → 談話方向、經文、要避開的話、跟進',[['who',1,'探訪對象（用稱呼或代號、年紀、和你的關係）'],['sit',2,'目前的狀況'],['goal',1,'這次探訪的目的（可不填）']],
+ '請預備一次牧養探訪，依序給：1.對方可能的感受與需要 2.兩三句溫和的開場 3.談話方向與開放、關懷的提問 4.兩三處適合的和合本經文（寫出處，只用你確定的）與如何分享 5.要避免說的話 6.一段可一起禱告的短禱 7.跟進行動，以及何時建議轉介專業協助（醫療、輔導、法律或危機專線）。',1,2200],
+['evan','🙋','傳福音談道預備','對方的背景與疑問 → 切入點、回應、邀請、跟進',[['who',1,'對象（稱呼或代號、和你的關係）'],['bg',2,'信仰背景、最近關心的事'],['q',2,'他問過的問題或反對（可不填）']],
+ '請預備一次一對一的福音談話，依序給：1.從對方生活出發的自然切入點 2.開場 3.對他的問題或反對，誠實溫和並附經文的回應 4.四個短點的簡單福音大綱 5.是否與如何邀請回應（不施壓、尊重他的自由、不用操縱手法，工作的是聖靈）6.跟進與門徒訓練的第一步。',1,2400],
+['serm','📖','講章大綱','經文與主題 → 引言、三要點、比喻、應用、結語',[['p',1,'經文（例如：約翰福音 15:1-8）'],['t',1,'主題或想強調的重點（可不填）'],['a',1,'會眾與時間（例如：主日 30 分鐘）']],
+ '請寫一份講章大綱：標題；一句話的大意；開場故事；三個要點，各含經文解釋、一個例子、一個具體應用；321 生命應用；結論與回應呼召；結束禱告。標明各部分約幾分鐘。忠於經文脈絡，不確定處標明。',1,2800],
+['grp','👥','小組帶領單','經文或主題 → 破冰、讀經、討論題、禱告',[['p',1,'經文或主題'],['g',1,'小組對象與人數（例如：青少年 8 人）'],['m',1,'時間（例如：90 分鐘）']],
+ '請寫一份附時間分配的小組帶領單：歡迎與破冰；敬拜或禱告；完整引用經文（和合本）；觀察、解釋、應用問題各三題（開放式）；個人分享引導；本週一個 321 操練；禱告重點與結束方式。最後給帶領者的提醒（冷場、一人獨佔發言、有人正在受傷時怎麼辦）。',1,2600],
+['letter','💌','代禱信／感謝信','給誰、想說什麼 → 一封完整的信',[['kind',1,'信的種類（代禱信、感謝信、關懷信…）'],['to',1,'寫給誰'],['pts',2,'想說的重點']],
+ '請寫出完整的信，溫暖真誠，附一節合適的和合本經文，可直接寄出。除非重點需要更多，約 300 到 500 字。最後標註「草稿，請牧者修改後自行寄出」。',0,1200],
+['wed','💍','婚禮祝福','新人與故事 → 3–5 分鐘祝福',[['c',1,'新人的名字'],['s',2,'你和他們的關係、想提的故事']],
+ '請寫一篇可以出聲念的 3 到 5 分鐘婚禮祝福：溫暖的開場、一個短故事、以經文（如以弗所書 5 章、哥林多前書 13 章、傳道書 4:12）談基督徒婚姻的意義、對兩人的實際勉勵，以及結尾祝福禱告。',0,1800],
+['fun','🕊','追思致詞','生平與信仰 → 溫柔有盼望的致詞',[['n',1,'逝者的稱呼'],['l',2,'生平、個性、令人懷念的事'],['f',1,'信仰狀況（可不填）']],
+ '請寫一篇約 4 到 6 分鐘的追思致詞：以具體的回憶紀念這個人，溫柔安慰家屬，以經文（如約翰福音 11:25-26、帖撒羅尼迦前書 4:13-14、啟示錄 21:4）不施壓地分享在耶穌裡復活的盼望，最後以禱告結束。若不知道逝者的信仰，不要斷言他在哪裡，只著重神的安慰與盼望。',1,2200]];
+var TBM=' 請與使用者用同一種語言寫作，完整引用經文並寫出出處（和合本），不確定的經文直說不確定。對話中的「會友甲、乙…」是代號，請原樣使用。適合處自然融入 321 理念（耶穌是榜樣、聖經是準則、聖靈是引導；讓耶穌作王、榮耀歸神）。用清楚的小標題與條列。';
+(function(){var i,t;for(i=0;i<TB.length;i++){t=TB[i];CMDS['工具'+t[0]]={p:t[5]+TBM+'\n使用者提供的資料：',m:t[6],t:t[7],tb:1};}})();
+var PENDTOOL=null;
+function tbHtml(){var o='<div class="sm">選一個工具，填幾個重點，小智就產出完整的預備。這只是幫助預備，不能取代真實的陪伴與禱告。</div><div class="tbg">',i,t;
+ for(i=0;i<TB.length;i++){t=TB[i];o+='<button data-act="tbtool" data-k="'+t[0]+'"><span>'+t[1]+'</span><b>'+esc(t[2])+'</b><small>'+esc(t[3])+'</small></button>';}
+ return o+'</div>';}
+function tbForm(k){var t=null,i,f,o;for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB[i];if(!t)return;
+ o='<div class="sm">'+esc(t[3])+'</div>';
+ for(i=0;i<t[4].length;i++){f=t[4][i];o+='<div class="fld"><label for="tb_'+f[0]+'">'+esc(f[2])+'</label>'+(f[1]===2?'<textarea id="tb_'+f[0]+'" rows="4"></textarea>':'<input id="tb_'+f[0]+'">')+'</div>';}
+ o+='<div class="note">會友姓名會在送出前自動換成代號；請勿填身分證號、電話、住址。</div><div class="row" style="margin-top:.8rem">'+btn('tbgo','請小智產出','pri sm2','data-k="'+k+'"')+' '+btn('tbopen','‹ 回工具箱','sm2')+'</div>';
+ openSheet(t[1]+' '+esc(t[2]),o);}
+function tbSend(k){var t=null,i,f,v,lines=[],first='';for(i=0;i<TB.length;i++)if(TB[i][0]===k)t=TB[i];if(!t||busy)return;
+ for(i=0;i<t[4].length;i++){f=t[4][i];v=($('tb_'+f[0])||{value:''}).value.trim();if(i===0)first=v;if(v)lines.push('・'+f[2].replace(/（[^）]*）/g,'')+'：'+v);}
+ if(!first){toast('請至少填第一欄');return;}
+ var body=lines.join('\n');PENDTOOL={r:'u',t:t[1]+' '+t[2]+'\n'+body,cmd:'工具'+k,a:body};
+ if(SET.pv!==false){pvOpen(body);return;}
+ closeSheet();sendChat(true);}
 var SYS='你是「小智」，台灣貴格會一位牧者的牧會助理。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。不替聖靈說話，不保證神的旨意。行政、公文、法規與會議類內容保持專業語氣，不插入靈修用語；321理念只在牧養與勸勉類回覆中自然出現。格式：短標題與條列，不用表格與程式碼。';
 var CRISIS_RE=/自殺|輕生|不想活|想死|結束生命|了結自己|活不下去|傷害自己|自傷|割腕|跳樓|尋短|不想活了|活著沒意思|活著沒有意思|想消失|不如死了|一了百了|吞藥|燒炭|上吊|跳海|了斷|suicid|kill myself|end my life|want to die|self-harm/i;
 var ABUSE_RE=/家暴|毆打|性侵|性騷擾|猥褻|虐待|施暴|暴力相向|亂倫|兒虐|被打得|身上有傷|abuse|rape/i;
@@ -399,7 +432,7 @@ function vFlow(){var c=null,i;for(i=0;i<CARDS.length;i++)if(CARDS[i].id===V.id)c
  o+='<div class="note">經文取自和合本，使用前請對照聖經核對。</div><div style="margin-top:1rem">'+btn('askai','請小智協助這個情境','pri blk','data-cmd="'+esc(c.cmd+c.t)+'"')+'</div>';return o;}
 function vChat(){if(!SET.ai){return '<h1>小智</h1><div class="card"><b>啟用小智之前，請先了解：</b><div class="sub" style="margin-top:.5rem">• 您輸入的文字會經由團契的中繼伺服器，送到 Anthropic 的 Claude 處理。<br>• 送出前，App 會把已建檔會友的姓名與稱呼換成「會友甲」等代號，並移除電話、電子郵件、網址與長串數字。<br>• 這不是萬無一失：請勿輸入身分證號、密碼，或足以辨認個人的詳細情節。<br>• 小智不會自動傳訊息給任何人，所有草稿都由您修改後自行送出。<br>• 小智是 AI，引用的經文與資料可能有誤，請務必核對。<br>• 對話紀錄只存在本機並加密。</div></div>'+btn('aion','我了解，啟用小智','pri blk');}
  var o='<div class="row"><h1 class="grow">小智</h1>'+btn('clrchat','清除對話','sm2')+'</div><div class="msgs" id="msgs">'+msgsHtml()+'</div>';
- o+='<div class="cbar"><div class="cmds">';var k;for(k in CMDS)o+=btn('chip','/'+k,'sm2','data-c="'+k+'"');
+ o+='<div class="cbar"><div class="cmds">';var k;for(k in CMDS)if(!CMDS[k].tb)o+=btn('chip','/'+k,'sm2','data-c="'+k+'"');o+=btn('tbopen','🧰 工具箱','sm2');
  o+='</div><textarea id="cin" rows="2" placeholder="輸入問題，或點上面的指令…（會友姓名會自動換成代號）">'+esc(draft)+'</textarea><div style="margin-top:.4rem">'+btn('send','送出','pri blk')+'</div></div>';return o;}
 function md(s){s=esc(s);var L=s.split('\n'),o='',i,x,r;
  for(i=0;i<L.length;i++){x=L[i];r=null;
@@ -531,11 +564,12 @@ function aiCall(msgs,model,max,cb){var url=SET.proxy||PROXY,tries=0,dl=[900,1800
  go();}
 function pvOpen(txt){var r=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt),raw=r?r[2]:txt,d=deid(raw);
  openSheet('送出前確認','<div class="sm">以下是即將送給小智的內容。已替換或移除 <b>'+d.n+'</b> 處（會友姓名→會友甲乙…，電話、電郵、網址、證號、地址）。</div><pre class="pv" style="white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:.6rem;padding:.7rem;margin:.6rem 0;max-height:40vh;overflow:auto">'+esc(d.t)+'</pre><div class="note warn">名單以外的人名、學校、公司、地點不會自動遮蔽。若有，請按「回去修改」改掉再送。</div><div class="row" style="margin-top:.8rem">'+btn('pvgo','確認送出','pri sm2')+' '+btn('close','回去修改','sm2')+'</div>');}
-function sendChat(go){if(busy)return;var ta=$('cin'),txt=ta?ta.value.trim():'';if(!txt)return;
- if(go!==true&&SET.pv!==false){var rr=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt);if(rr&&!(rr[2]||'').trim()){toast('請在指令後面寫上情況');return;}pvOpen(txt);return;}
- var r=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt),m={r:'u',t:txt};
+function sendChat(go){if(busy)return;var tm=null,ta=$('cin'),txt=ta?ta.value.trim():'';
+ if(go===true&&PENDTOOL){tm=PENDTOOL;PENDTOOL=null;txt=tm.a;}else{PENDTOOL=null;if(!txt)return;}
+ if(!tm&&go!==true&&SET.pv!==false){var rr=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt);if(rr&&!(rr[2]||'').trim()){toast('請在指令後面寫上情況');return;}pvOpen(txt);return;}
+ var r=tm?null:/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt),m=tm||{r:'u',t:txt};
  if(r){m.cmd=r[1];m.a=r[2]||'';if(!m.a.trim()){toast('請在指令後面寫上情況');return;}}
- m.n=deid(m.cmd?m.a:m.t).n;D.chat.push(m);draft='';
+ m.n=deid(m.cmd?m.a:m.t).n;D.chat.push(m);if(!tm)draft='';
  if(CRISIS_RE.test(txt))D.chat.push({r:'a',crisis:true});if(ABUSE_RE.test(txt))D.chat.push({r:'a',crisis:'abuse'});
  var ph={r:'a',pending:true};D.chat.push(ph);busy=true;save();paintChat(true);
  var model=(m.cmd&&CMDS[m.cmd].m)?(SET.mDeep||M_DEEP):(SET.mFast||M_FAST),max=m.cmd?CMDS[m.cmd].t:1200,base=buildMsgs(),msgs=base,acc='',cont=0;
@@ -636,7 +670,7 @@ prep:function(el){var m=getM(el.getAttribute('data-id')),lc=lastCare(m.id);
  draft='/探訪 對象：'+m.name+'（'+(m.cat||'會友')+'）。'+(lc?'上次關懷是 '+ago(lc)+'。':'')+'請補充這次探訪的原因與情況：';V={tab:'chat',sub:null,id:null};render();},
 aion:function(){SET.ai=true;saveSet();render();},
 aitog:function(){SET.ai=!SET.ai;saveSet();render();},
-chip:function(el){var ta=$('cin');ta.value='/'+el.getAttribute('data-c')+' ';draft=ta.value;ta.focus();},
+tbopen:function(){openSheet('🧰 牧養工具箱',tbHtml());},tbtool:function(el){tbForm(el.getAttribute('data-k'));},tbgo:function(el){tbSend(el.getAttribute('data-k'));},chip:function(el){var ta=$('cin');ta.value='/'+el.getAttribute('data-c')+' ';draft=ta.value;ta.focus();},
 send:function(){sendChat();},
 clrchat:function(){if(!confirm('清除所有對話？'))return;D.chat=[];save();render();},
 copy:function(el){var m=D.chat[+el.getAttribute('data-i')];if(!m)return;var t=m.t;

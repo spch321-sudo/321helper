@@ -26,7 +26,7 @@ try:
     assert sent[0]['model']=='claude-sonnet-5-5'
     pg.fill('#cin','/勸慰 一位家人剛過世');pg.click('[data-act=send]');pg.wait_for_function("document.querySelectorAll('.msg.a').length>=2")
     assert sent[1]['model']=='claude-haiku-5-5'
-    assert pg.locator('.cmds button').count()==10
+    assert pg.locator('.cmds button').count()==11
     # persistence
     pg.reload();pg.fill('#pw','pastor123');pg.click('[data-act=unlock]');pg.wait_for_selector('.hero')
     pg.click('#tabs [data-t=mini]');assert '愛的次序' in pg.inner_text('#main')
