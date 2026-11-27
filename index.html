@@ -89,7 +89,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.10.8';
+var APPVER='1.10.9';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -216,6 +216,7 @@ prm:[['prod','要做的產品',['海報','簡報','影片','詩歌','文章','�
 };
 var TBM2=' 請用繁體中文說明，提示詞本身依平台需要可用英文。這是工具型任務，不需要引用經文，也不必加入靈修用語，保持專業實用、條理清楚。';
 var TBM=' 請與使用者用同一種語言寫作，完整引用經文並寫出出處（和合本），不確定的經文直說不確定。對話中的「會友甲、乙…」是代號，請原樣使用。適合處自然融入 321 理念（耶穌是榜樣、聖經是準則、聖靈是引導；讓耶穌作王、榮耀歸神）。用清楚的小標題與條列。';
+(function(){var i;for(i=0;i<TB.length;i++)if(TB[i][0]==='prm'){TB.unshift(TB.splice(i,1)[0]);break;}})();
 (function(){var i,t;for(i=0;i<TB.length;i++){t=TB[i];CMDS['工具'+t[0]]={p:t[5]+(t[0]==='prm'?TBM2:TBM)+'\n使用者提供的資料：',m:t[6],t:t[7],tb:1};}})();
 var PENDTOOL=null;
 function tbHtml(){var o='<div class="sm">選一個工具，填幾個重點，小智就產出完整的預備。這只是幫助預備，不能取代真實的陪伴與禱告。</div><div class="tbg">',i,t;

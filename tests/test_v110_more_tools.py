@@ -39,6 +39,7 @@ try:
     box();assert pg.locator('.tbg button').count()==19,pg.locator('.tbg button').count()
     for x in ['編寫週報','寫牧養短文','寫靈修小品','事工計劃表','財務報表','製作投影片','製作卡片','做成小工具','設計提示詞']:assert x in pg.inner_text('.sc'),x
     pg.screenshot(path='/tmp/toolbox3.png',full_page=True)
+    assert pg.evaluate("document.querySelector('.tbg button').getAttribute('data-k')")=='prm'
     # text tools reach the model with their spec
     for k,first,marker in [('week','items','教會週報'),('pshort','topic','牧養短文'),('devo','t','靈修小品'),('plan','m','事工計劃表'),('fin','per','收支報表'),('prm','need','提示詞')]:
         pg.click('.tbg [data-k=%s]'%k);pg.fill('#tb_%s'%first,'測試內容 0912345678');pg.click('[data-act=tbgo]')
