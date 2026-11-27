@@ -24,6 +24,11 @@ try:
         if 'api.pexels.com' in r.request.url:
             r.fulfill(status=200,headers={'access-control-allow-origin':'*','content-type':'application/json'},body=json.dumps({"photos":[{"photographer":"Tester","src":{"tiny":"https://images.pexels.com/t.png","large2x":"https://images.pexels.com/l.png"}}]}))
         else: r.fulfill(status=200,headers={'access-control-allow-origin':'*','content-type':'image/png'},body=PNG)
+    BG={"cats":[{"id":"bible","n":"聖經故事"},{"id":"cats","n":"貓咪"},{"id":"cakes","n":"蛋糕"}],"list":[{"f":"a.jpg","t":"as.jpg","c":"bible","n":"伊甸園"},{"f":"b.jpg","t":"bs.jpg","c":"cats","n":"小貓"}]}
+    def bgr(r):
+        if r.request.url.endswith('bg.json'): r.fulfill(status=200,headers={'access-control-allow-origin':'*','content-type':'application/json'},body=json.dumps(BG))
+        else: r.fulfill(status=200,headers={'access-control-allow-origin':'*','content-type':'image/png'},body=PNG)
+    pg.route(re.compile(r'https://spch321-sudo\.github\.io/bible/.*'),bgr)
     pg.route(re.compile(r'https://(api|images)\.pexels\.com/.*'),pxr)
     pg.goto('http://localhost:8776/index.html')
     pg.fill('#pw1','pastor123');pg.fill('#pw2','pastor123');pg.check('#ack');pg.click('[data-act=setup]');pg.wait_for_selector('.sc');pg.click('.sc [data-act=close]')
@@ -69,6 +74,10 @@ try:
     pg.fill('#cd_v','願耶和華賜福給你，保護你。');pg.fill('#cd_vs','民數記 6:24')
     pg.set_input_files('#cd_file','/tmp/ph.png');pg.wait_for_selector('[data-act=cdnophoto]')
     assert pg.input_value('#cd_v')=='願耶和華賜福給你，保護你。'
+    pg.click('[data-act=cdgal]');pg.wait_for_selector('[data-act=cdgpick]')
+    assert pg.locator('[data-act=cdgcat]').count()==2
+    pg.click('[data-act=cdgcat][data-k="cats"]');assert pg.locator('[data-act=cdgpick]').count()==1
+    pg.click('[data-act=cdgpick]');pg.wait_for_selector('[data-act=cdnophoto]');pg.click('[data-act=cdnophoto]')
     pg.click('[data-act=cdpx]');pg.wait_for_selector('[data-act=cdpxpick]');pg.click('[data-act=cdpxpick]');pg.wait_for_selector('[data-act=cdnophoto]')
     pg.click('[data-act=cdimp]');pg.click('[data-act=cdimp2][data-k="更溫暖"]');pg.wait_for_function("document.getElementById('cd_tx').value.indexOf('願主賜福')>=0")
     pg.fill('#cd_tx','生日快樂，主祝福你。')
