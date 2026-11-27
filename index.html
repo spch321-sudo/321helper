@@ -85,7 +85,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.3.2';
+var APPVER='1.3.3';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -173,7 +173,7 @@ function fixData(d){var k,def=defData();for(k in def)if(d[k]==null)d[k]=def[k];i
 
 /* ---------- lock ---------- */
 function lockNow(){var p=flush();p.then(function(){D=null;KEY=null;SALT=null;V={tab:'today',sub:null,id:null};draft='';closeSheet();
- if(upAvail){location.reload();return;}renderLock();},function(){D=null;KEY=null;renderLock();});}
+ if(upAvail){applyUpdate();return;}renderLock();},function(){D=null;KEY=null;renderLock();});}
 function resetIdle(){clearTimeout(idleT);if(D)idleT=setTimeout(lockNow,SET.lockMin*60000);}
 function renderLock(){document.body.className='locked';$('tabs').innerHTML='';
  var has=localStorage.getItem(VKEY);
@@ -374,7 +374,7 @@ function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i+
  o+='<h2>資料</h2><div class="card"><div class="sub">備份檔仍是加密的，需要備份當時的密碼才能還原。建議每月備份，並存放在安全的地方。</div><div style="margin-top:.6rem">'+btn('export','匯出加密備份','pri')+' '+btn('import','匯入備份')+' '+btn('dlbible','下載經文供離線核對')+'</div><input id="impf" type="file" accept=".json,application/json" style="display:none"></div>';
  o+='<h2>小智（AI）</h2><div class="card"><label class="chk"><input type="checkbox" data-act="aitog"'+(SET.ai?' checked':'')+'><span>啟用小智</span></label><details><summary class="sm">進階</summary>'+fld('s_px','中繼網址（空白＝預設）','<input id="s_px" value="'+esc(SET.proxy||'')+'" onchange="window.PCA.set(\'proxy\',this.value)">')+fld('s_mf','快速模型','<input id="s_mf" value="'+esc(SET.mFast||M_FAST)+'" onchange="window.PCA.set(\'mFast\',this.value)">')+fld('s_md','深入模型','<input id="s_md" value="'+esc(SET.mDeep||M_DEEP)+'" onchange="window.PCA.set(\'mDeep\',this.value)">')+'</details></div>';
  o+='<h2>外觀</h2><div class="card">'+fld('s_fs','字級','<select id="s_fs" onchange="window.PCA.fs(this.value)">'+['標準','大','特大','超大'].map(function(n,k){return '<option value="'+k+'"'+(k===SET.font?' selected':'')+'>'+n+'</option>';}).join('')+'</select>')+'</div>';
- o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div style="margin-top:.6rem">'+btn('upd','檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
+ o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div class="sub">自動更新：已啟用。有新版時，會在您鎖定或離開 App 時自動更新。</div><div style="margin-top:.6rem">'+btn('upd','立即檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
  o+='<div style="margin-top:1.5rem">'+btn('wipe','清除全部資料','dng blk')+'</div>';return o;}
 function render(){if(!D){renderLock();return;}document.body.className='';var t=V.tab,o,m=$('main');
  if(V.sub==='member')o=vMember();else if(V.sub==='prayers')o=vPrayers();else if(V.sub==='flow')o=vFlow();else if(V.sub==='sermon')o=vSermon();else if(V.sub==='meeting')o=vMeeting();
@@ -514,7 +514,7 @@ document.addEventListener('click',function(e){var el=e.target,sh=$('sheet');
 document.addEventListener('change',function(e){if(e.target&&e.target.id==='impf'&&e.target.files&&e.target.files[0]){doImport(e.target.files[0]);e.target.value='';}});
 document.addEventListener('input',function(e){if(e.target&&e.target.id==='cin')draft=e.target.value;});
 ['pointerdown','keydown','scroll'].forEach(function(ev){document.addEventListener(ev,function(){if(D)resetIdle();},true);});
-document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();if(D)flush();}
+document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();if(D)flush();if(upAvail&&idleNow()){var tr='';try{tr=sessionStorage.getItem('pca_try');}catch(e){}if(!tr)applyUpdate();}}
  else{if(D&&hiddenAt&&Date.now()-hiddenAt>SET.lockMin*60000)lockNow();hiddenAt=0;checkUpdate(false);}});
 window.addEventListener('pagehide',function(){if(D)flush();});
 window.PCA={mt:function(k,v){var m=getMt(V.id);if(m){m[k]=v;save();}},sv:function(k,v){var m=getS(V.id);if(m){m[k]=v;save();}},flist:function(){var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},
@@ -522,11 +522,17 @@ window.PCA={mt:function(k,v){var m=getMt(V.id);if(m){m[k]=v;save();}},sv:functio
  fs:function(v){SET.font=+v||0;saveSet();applyFont();},set:function(k,v){v=v.trim();if(v)SET[k]=v;else delete SET[k];saveSet();toast('已儲存');}};
 
 /* ---------- update ---------- */
+function idleNow(){var a=document.activeElement;return D&&!busy&&!$('sheet').classList.contains('show')&&!draft&&!(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));}
+function applyUpdate(){var go=function(){var u=location.pathname+'?u='+Date.now();location.replace(u);};if(D)flush().then(go,go);else go();}
 function checkUpdate(manual){if(navigator.onLine===false){if(manual)toast('目前離線');return;}
  fetch('version.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.json();}).then(function(j){
-  if(j&&j.version&&j.version!==APPVER){upAvail=true;$('updbar').hidden=false;if(manual)toast('有新版本');if(!D)location.reload();}
-  else if(manual)toast('已是最新版 v'+APPVER);}).catch(function(){if(manual)toast('檢查失敗');});}
-$('updbar').addEventListener('click',function(){if(D){flush().then(function(){location.reload();});}else location.reload();});
+  if(j&&j.version&&j.version!==APPVER){upAvail=true;var tried='';try{tried=sessionStorage.getItem('pca_try');}catch(e){}
+   if(tried===j.version){$('updbar').hidden=false;if(manual)toast('已有新版本，請點上方橫條更新');return;}
+   if(!D||document.hidden||manual&&idleNow()){try{sessionStorage.setItem('pca_try',j.version);}catch(e){}applyUpdate();return;}
+   $('updbar').hidden=false;if(manual)toast('有新版本，將在鎖定或離開時自動更新');}
+  else{upAvail=false;$('updbar').hidden=true;if(manual)toast('已是最新版 v'+APPVER);}}).catch(function(){if(manual)toast('檢查失敗');});}
+$('updbar').addEventListener('click',function(){applyUpdate();});
+try{if(location.search.indexOf('u=')>=0)history.replaceState(null,'',location.pathname);}catch(e){}
 
 /* ---------- boot ---------- */
 function boot(){SET=loadSet();applyFont();
