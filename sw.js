@@ -1,4 +1,4 @@
-var VER='1.10.1';
+var VER='1.10.2';
 var CACHE='pca-'+VER;
 var SHELL=['./','index.html','manifest.json','icon-192.png','icon-180.png','icon-512.png','logo.png'];
 self.addEventListener('install',function(e){
