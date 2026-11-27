@@ -85,7 +85,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.3.3';
+var APPVER='1.4.0';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -158,14 +158,32 @@ function loadSet(){var s={};try{s=JSON.parse(localStorage.getItem(SKEY)||'{}');}
 function saveSet(){try{localStorage.setItem(SKEY,JSON.stringify(SET));}catch(e){}}
 function applyFont(){document.documentElement.className=SET.font?'fs'+SET.font:'';}
 
+/* ---------- storage (IndexedDB + sync cache) ---------- */
+var ITER=600000,IT=ITER,VRAW=null,IDBH=null,wq=Promise.resolve();
+function idbOpen(){return new Promise(function(res){try{var r=indexedDB.open('pca_db',1);r.onupgradeneeded=function(){r.result.createObjectStore('kv');};r.onsuccess=function(){res(r.result);};r.onerror=function(){res(null);};r.onblocked=function(){res(null);};}catch(e){res(null);}});}
+function idbGet(k){return new Promise(function(res){if(!IDBH){res(null);return;}try{var q=IDBH.transaction('kv','readonly').objectStore('kv').get(k);q.onsuccess=function(){res(q.result==null?null:q.result);};q.onerror=function(){res(null);};}catch(e){res(null);}});}
+function idbPut(k,v){return new Promise(function(res,rej){try{var tx=IDBH.transaction('kv','readwrite');tx.objectStore('kv').put(v,k);tx.oncomplete=function(){res();};tx.onerror=function(){rej(tx.error);};tx.onabort=function(){rej(tx.error);};}catch(e){rej(e);}});}
+function idbDel(k){return new Promise(function(res){if(!IDBH){res();return;}try{var tx=IDBH.transaction('kv','readwrite');tx.objectStore('kv').delete(k);tx.oncomplete=function(){res();};tx.onerror=function(){res();};tx.onabort=function(){res();};}catch(e){res();}});}
+function lsSet(v){try{localStorage.setItem(VKEY,v);}catch(e){}}
+function lsDel(){try{localStorage.removeItem(VKEY);}catch(e){}}
+function vGet(){return VRAW;}
+function vSet(raw){VRAW=raw;
+ wq=wq.then(function(){if(!IDBH){lsSet(raw);return;}return idbPut(VKEY,raw).then(function(){lsDel();},function(){lsSet(raw);});}).catch(function(){});
+ return wq;}
+function vDel(){VRAW=null;wq=wq.then(function(){lsDel();return idbDel(VKEY);}).catch(function(){});return wq;}
+function storeInit(){return idbOpen().then(function(h){IDBH=h;return idbGet(VKEY);}).then(function(raw){var ls=null;try{ls=localStorage.getItem(VKEY);}catch(e){}
+  if(raw){VRAW=raw;if(ls)lsDel();return;}
+  if(ls){VRAW=ls;if(IDBH)return idbPut(VKEY,ls).then(function(){return idbGet(VKEY);}).then(function(chk){if(chk===ls)lsDel();},function(){});}
+ }).then(function(){try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}});}
+
 /* ---------- crypto ---------- */
 function b2s(buf){var a=new Uint8Array(buf),s='',i;for(i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s);}
 function s2b(s){var b=atob(s),a=new Uint8Array(b.length),i;for(i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;}
-function deriveKey(pw,salt){return crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']).then(function(k){return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:150000,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);});}
-function encData(){var iv=crypto.getRandomValues(new Uint8Array(12));
- return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},KEY,new TextEncoder().encode(JSON.stringify(D))).then(function(ct){localStorage.setItem(VKEY,JSON.stringify({v:1,salt:b2s(SALT),iv:b2s(iv),ct:b2s(ct)}));});}
-function decVault(raw,pw){var o=JSON.parse(raw),salt=s2b(o.salt);
- return deriveKey(pw,salt).then(function(k){return crypto.subtle.decrypt({name:'AES-GCM',iv:s2b(o.iv)},k,s2b(o.ct)).then(function(pt){return {k:k,salt:salt,d:JSON.parse(new TextDecoder().decode(pt))};});});}
+function deriveKey(pw,salt,it){return crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']).then(function(k){return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:it||ITER,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);});}
+function encData(){var iv=crypto.getRandomValues(new Uint8Array(12)),K=KEY,S=SALT,I=IT;
+ return crypto.subtle.encrypt({name:'AES-GCM',iv:iv},K,new TextEncoder().encode(JSON.stringify(D))).then(function(ct){return vSet(JSON.stringify({v:2,it:I,salt:b2s(S),iv:b2s(iv),ct:b2s(ct)}));});}
+function decVault(raw,pw){var o=JSON.parse(raw),salt=s2b(o.salt),it=+o.it||150000;
+ return deriveKey(pw,salt,it).then(function(k){return crypto.subtle.decrypt({name:'AES-GCM',iv:s2b(o.iv)},k,s2b(o.ct)).then(function(pt){return {k:k,salt:salt,it:it,d:JSON.parse(new TextDecoder().decode(pt))};});});}
 function save(){if(!D||!KEY)return;clearTimeout(saveT);saveT=setTimeout(flush,120);}
 function flush(){clearTimeout(saveT);return (D&&KEY)?encData():Promise.resolve();}
 function defData(){return {v:1,members:[],cares:[],prayers:[],days:{},chat:[],sermons:[],meetings:[],duties:[],set:{pname:''}};}
@@ -176,7 +194,7 @@ function lockNow(){var p=flush();p.then(function(){D=null;KEY=null;SALT=null;V={
  if(upAvail){applyUpdate();return;}renderLock();},function(){D=null;KEY=null;renderLock();});}
 function resetIdle(){clearTimeout(idleT);if(D)idleT=setTimeout(lockNow,SET.lockMin*60000);}
 function renderLock(){document.body.className='locked';$('tabs').innerHTML='';
- var has=localStorage.getItem(VKEY);
+ var has=vGet();
  if(!has){$('main').innerHTML='<div class="lock"><img src="logo.png" alt="321牧會助理" style="width:150px;height:150px;border-radius:28px"><h1>歡迎使用牧會助理</h1><div class="sub">資料只存在這支手機上，並以您設定的密碼加密。</div>'+
  '<div class="card" style="text-align:left">'+fld('pw1','設定密碼（至少 6 個字元，建議 8 個以上）','<input id="pw1" type="password" autocomplete="new-password">')+fld('pw2','再輸入一次','<input id="pw2" type="password" autocomplete="new-password">')+
  '<label class="chk" style="margin-top:.8rem"><input id="ack" type="checkbox"> <span class="sm">我明白：忘記密碼，資料無法找回，沒有任何後門。</span></label></div>'+btn('setup','建立並進入','pri blk')+'<div class="note" id="lerr"></div></div>';return;}
@@ -189,13 +207,15 @@ var fails=0;
 function doUnlock(){var pw=$('pw').value,err=$('lerr'),until=+localStorage.getItem('pca_lockuntil')||0;
  if(until>Date.now()){err.textContent='嘗試次數過多，請稍後再試';return;}
  if(!pw)return;err.textContent='解鎖中…';
- decVault(localStorage.getItem(VKEY),pw).then(function(r){KEY=r.k;SALT=r.salt;D=fixData(r.d);fails=0;enter();},function(){fails++;
+ decVault(vGet(),pw).then(function(r){KEY=r.k;SALT=r.salt;IT=r.it;D=fixData(r.d);fails=0;enter();if(r.it<ITER)upgradeKdf(pw);},function(){fails++;
   if(fails>=5){localStorage.setItem('pca_lockuntil',String(Date.now()+30000));fails=0;err.textContent='錯誤次數過多，請 30 秒後再試';}else err.textContent='密碼不正確（'+fails+'/5）';});}
+function upgradeKdf(pw){var s=crypto.getRandomValues(new Uint8Array(16));
+ deriveKey(pw,s,ITER).then(function(k){if(!D)return;SALT=s;KEY=k;IT=ITER;return encData();}).catch(function(){});}
 function doSetup(){var a=$('pw1').value,b=$('pw2').value,err=$('lerr');
  if(a.length<6){err.textContent='密碼至少 6 個字元';return;}if(a!==b){err.textContent='兩次輸入不一致';return;}
  if(!$('ack').checked){err.textContent='請先勾選確認';return;}
- err.textContent='建立中…';SALT=crypto.getRandomValues(new Uint8Array(16));
- deriveKey(a,SALT).then(function(k){KEY=k;D=defData();return encData();}).then(function(){enter(true);},function(){err.textContent='建立失敗，請確認使用 https 開啟';});}
+ err.textContent='建立中…';SALT=crypto.getRandomValues(new Uint8Array(16));IT=ITER;
+ deriveKey(a,SALT,ITER).then(function(k){KEY=k;D=defData();return encData();}).then(function(){enter(true);},function(){err.textContent='建立失敗，請確認使用 https 開啟';});}
 function enter(first){document.body.className='';resetIdle();render();if(first)openSheet('歡迎',
  '<div class="card">1. 所有資料在手機上加密，沒有帳號、沒有雲端。<br>2. 小智（AI）預設關閉，啟用前會說明送出什麼資料。<br>3. 請定期到「我」匯出加密備份。<br>4. 這是輔助工具，不取代禱告、專業諮商或醫療。</div>'+btn('close','開始使用','pri blk'));}
 
@@ -221,6 +241,7 @@ function vToday(){var t=today(),o='',i,j,c,m;
  var g=(D.set.pname?esc(D.set.pname)+'，':'')+'平安';
  o+='<div class="hero"><div class="sm">'+fmtDate(t)+'</div><h1>'+g+'</h1><div class="line321">'+esc(LINES[doy()%LINES.length])+'</div></div>';
  var al=D.days[t]&&D.days[t].alone;
+ o+=bkCard();
  o+='<div class="card"><label class="chk"><input type="checkbox" data-act="alone"'+(al?' checked':'')+'><b>今天已先與主獨處</b></label><div class="sub">先生命，再關係，後事工。</div></div>';
  var vv=VERSES[doy()%VERSES.length];o+='<div class="vs"><b>'+esc(vv[0])+'</b><br>'+esc(vv[1])+'</div>';
  var fu=[];for(i=0;i<D.cares.length;i++){c=D.cares[i];if(c.fu&&!c.done&&c.fu<=t)fu.push(c);}
@@ -337,23 +358,42 @@ var BN=['創世記:GEN','出埃及記:EXO','利未記:LEV','民數記:NUM','申�
 var BCODE={},BNAMES=[],BREG=null,BK={};
 (function(){for(var i=0;i<BN.length;i++){var p=BN[i].split(':');BCODE[p[0]]=p[1];BNAMES.push(p[0]);}
  BNAMES.sort(function(a,b){return b.length-a.length;});BREG=new RegExp('('+BNAMES.join('|')+')\\s*(\\d+)\\s*[章篇:：]\\s*(\\d+)(?:\\s*[-–~到至]\\s*(\\d+))?','g');})();
+var ABB={'創':'創世記','申':'申命記','詩':'詩篇','箴':'箴言','賽':'以賽亞書','耶':'耶利米書','羅':'羅馬書','弗':'以弗所書','徒':'使徒行傳','啟':'啟示錄','雅':'雅各書','林前':'哥林多前書','林後':'哥林多後書','帖前':'帖撒羅尼迦前書','帖後':'帖撒羅尼迦後書','提前':'提摩太前書','提後':'提摩太後書','彼前':'彼得前書','彼後':'彼得後書','撒上':'撒母耳記上','撒下':'撒母耳記下','王上':'列王紀上','王下':'列王紀下','代上':'歷代志上','代下':'歷代志下'};
+var AREG=new RegExp('('+Object.keys(ABB).sort(function(a,b){return b.length-a.length;}).join('|')+')\\s*(\\d+)\\s*[:：]\\s*(\\d+)(?:\\s*[-–~到至]\\s*(\\d+))?','g');
 function parseRefs(t,span){span=span||11;t=String(t||'').replace(/列王記/g,'列王紀').replace(/歷代誌/g,'歷代志').replace(/約翰壹書/g,'約翰一書').replace(/約翰貳書/g,'約翰二書').replace(/約翰參書/g,'約翰三書');
- var out=[],seen={},m,re=new RegExp(BREG.source,'g');
- while((m=re.exec(t))!==null&&out.length<6){var a=+m[3],b=m[4]?+m[4]:a;if(b<a||b-a>span)b=a;var k=m[1]+m[2]+':'+a+'-'+b;if(seen[k])continue;seen[k]=1;out.push({bk:m[1],c:+m[2],a:a,b:b});}
+ var all=[],m,re=new RegExp(BREG.source,'g'),re2=new RegExp(AREG.source,'g'),out=[],seen={},j;
+ while((m=re.exec(t))!==null)all.push({m:m,bk:m[1],ix:m.index});
+ while((m=re2.exec(t))!==null)all.push({m:m,bk:ABB[m[1]],ix:m.index,ab:1});
+ all.sort(function(x,y){return x.ix-y.ix;});
+ for(j=0;j<all.length&&out.length<6;j++){m=all[j].m;var a=+m[3],b=m[4]?+m[4]:a;if(b<a||b-a>span)b=a;var bk=all[j].bk;
+  if(all[j].ab){var cl=false,q;for(q=0;q<out.length;q++)if(all[j].ix>=out[q].ix&&all[j].ix<out[q].end)cl=true;if(cl)continue;}
+  var k=bk+m[2]+':'+a+'-'+b;if(seen[k])continue;seen[k]=1;out.push({bk:bk,c:+m[2],a:a,b:b,ix:all[j].ix,end:all[j].ix+m[0].length});}
  return out;}
+function nrm(x){return String(x||'').replace(/着/g,'著').replace(/[^\u4e00-\u9fff0-9A-Za-z]/g,'');}
+function quoteOwner(t,refs){var re=/[「『]([^」』]{4,200})[」』]/g,m,j,best,bd,d,out=[];
+ while((m=re.exec(t))!==null){var st=m.index,en=st+m[0].length;best=-1;bd=41;
+  for(j=0;j<refs.length;j++){d=en<=refs[j].ix?refs[j].ix-en:(st>=refs[j].end?st-refs[j].end:99);if(d<bd){bd=d;best=j;}}
+  if(best>=0)out.push({r:best,q:m[1]});}
+ return out;}
+function quoteCheck(qs,ri,vt){var i,ok=0,bad=0,nv=nrm(vt),segs,good,any;
+ for(i=0;i<qs.length;i++){if(qs[i].r!==ri)continue;segs=qs[i].q.split(/[…⋯]+|\.{2,}/);good=true;any=false;
+  segs.forEach(function(g){var n=nrm(g);if(n.length>=4){any=true;if(nv.indexOf(n)<0)good=false;}});
+  if(any){if(good)ok++;else bad++;}}
+ return bad?2:(ok?1:0);}
 function loadBook(code,cb){if(BK[code]!==undefined){cb(BK[code]);return;}
  fetch('bible/'+code+'.json').then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(d){BK[code]=d;cb(d);},function(){BK[code]=undefined;cb(null);});}
-function verHtml(refs,books){var o='',i,r,d,t,k;
+function verHtml(refs,books,txt){var o='',i,r,d,t,k,qc,qn,qs=quoteOwner(String(txt||''),refs);
  for(i=0;i<refs.length;i++){r=refs[i];d=books[BCODE[r.bk]];
   if(d===null||d===undefined){o+='<div class="vv bad">'+esc(r.bk+' '+r.c+':'+r.a)+'：無法載入經文檔（離線或尚未下載），請對照聖經。</div>';continue;}
   t='';for(k=r.a;k<=r.b;k++){var x=d[r.c-1]&&d[r.c-1][k-1];if(!x){t='';break;}t+=x;}
-  o+=t?'<div class="vv"><b>'+esc(r.bk+' '+r.c+':'+r.a+(r.b>r.a?'-'+r.b:''))+'</b><br>'+esc(t)+'</div>':'<div class="vv bad">⚠ '+esc(r.bk+' '+r.c+':'+r.a+(r.b>r.a?'-'+r.b:''))+'：找不到這處經文，請以聖經為準。</div>';}
- return o+'<div class="note">只確認「這節經文是否存在、原文是什麼」，不判斷小智的解釋是否正確。以和合本原文為準。</div>';}
+  qc=t?quoteCheck(qs,i,t):0;qn=qc===2?'<div class="sm warn">⚠ 小智寫在這處旁邊的引文，字句與和合本不同（可能是意譯或記錯），請以下方原文為準。</div>':(qc===1?'<div class="sm ok">✓ 小智的引文與和合本相符。</div>':'');
+  o+=t?'<div class="vv"><b>'+esc(r.bk+' '+r.c+':'+r.a+(r.b>r.a?'-'+r.b:''))+'</b><br>'+esc(t)+qn+'</div>':'<div class="vv bad">⚠ '+esc(r.bk+' '+r.c+':'+r.a+(r.b>r.a?'-'+r.b:''))+'：找不到這處經文，請以聖經為準。</div>';}
+ return o+'<div class="note">確認經文是否存在、原文是什麼，並比對緊鄰的「」引文；不判斷小智的解釋是否正確。以和合本原文為準。</div>';}
 function fillVer(){var els=document.querySelectorAll('.ver[data-i]'),n;
  for(n=0;n<els.length;n++)(function(el){var m=D.chat[+el.getAttribute('data-i')];if(!m||el.getAttribute('data-done'))return;
   var refs=parseRefs(m.t),codes=[],books={},i,left;for(i=0;i<refs.length;i++){var c=BCODE[refs[i].bk];if(codes.indexOf(c)<0)codes.push(c);}
   left=codes.length;if(!left)return;
-  codes.forEach(function(c){loadBook(c,function(d){books[c]=d;if(--left===0){var box=el.querySelector('.vbody');if(box){box.innerHTML=verHtml(refs,books);el.setAttribute('data-done','1');}}});});})(els[n]);}
+  codes.forEach(function(c){loadBook(c,function(d){books[c]=d;if(--left===0){var box=el.querySelector('.vbody');if(box){box.innerHTML=verHtml(refs,books,m.t);el.setAttribute('data-done','1');}}});});})(els[n]);}
 function dlBible(){var i=0,fail=0;toast('下載經文中…');
  function next(){if(i>=BN.length){toast(fail?'完成，但有 '+fail+' 卷失敗':'經文已下載，可離線核對');return;}
   var c=BN[i++].split(':')[1];fetch('bible/'+c+'.json').then(function(r){if(!r.ok)fail++;return r.text();}).then(function(){if(i%11===0)toast('已下載 '+i+'/66');next();},function(){fail++;next();});}
@@ -371,8 +411,8 @@ function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i+
  o+='<div class="card"><div class="grid2"><div><div class="big">'+D.members.length+'</div><div class="sm">羊群人數</div></div><div><div class="big">'+mc+'</div><div class="sm">本月關懷紀錄</div></div></div></div>';
  o+='<h2>基本</h2><div class="card">'+fld('s_pn','稱呼（問安時使用）','<input id="s_pn" value="'+esc(D.set.pname||'')+'" onchange="window.PCA.pn(this.value)">')+'</div>';
  o+='<h2>安全</h2><div class="card">'+fld('s_lk','自動鎖定','<select id="s_lk" onchange="window.PCA.lk(this.value)">'+['1','5','15'].map(function(v){return '<option value="'+v+'"'+(+v===SET.lockMin?' selected':'')+'>'+v+' 分鐘無操作或離開後</option>';}).join('')+'</select>')+'<div style="margin-top:.6rem">'+btn('chpw','更改密碼')+' '+btn('lock','立即鎖定')+'</div></div>';
- o+='<h2>資料</h2><div class="card"><div class="sub">備份檔仍是加密的，需要備份當時的密碼才能還原。建議每月備份，並存放在安全的地方。</div><div style="margin-top:.6rem">'+btn('export','匯出加密備份','pri')+' '+btn('import','匯入備份')+' '+btn('dlbible','下載經文供離線核對')+'</div><input id="impf" type="file" accept=".json,application/json" style="display:none"></div>';
- o+='<h2>小智（AI）</h2><div class="card"><label class="chk"><input type="checkbox" data-act="aitog"'+(SET.ai?' checked':'')+'><span>啟用小智</span></label><details><summary class="sm">進階</summary>'+fld('s_px','中繼網址（空白＝預設）','<input id="s_px" value="'+esc(SET.proxy||'')+'" onchange="window.PCA.set(\'proxy\',this.value)">')+fld('s_mf','快速模型','<input id="s_mf" value="'+esc(SET.mFast||M_FAST)+'" onchange="window.PCA.set(\'mFast\',this.value)">')+fld('s_md','深入模型','<input id="s_md" value="'+esc(SET.mDeep||M_DEEP)+'" onchange="window.PCA.set(\'mDeep\',this.value)">')+'</details></div>';
+ o+='<h2>資料</h2><div class="card"><div class="sub">備份檔仍是加密的，需要備份當時的密碼才能還原。建議每週備份，並存放在安全的地方。</div><div class="sm" style="margin-top:.3rem">上次備份：'+(SET.lastBackup?fmtDate(SET.lastBackup):'尚未備份')+'</div><div style="margin-top:.6rem">'+btn('export','匯出加密備份','pri')+' '+btn('import','匯入備份')+' '+btn('dlbible','下載經文供離線核對')+'</div><input id="impf" type="file" accept=".json,application/json" style="display:none"></div>';
+ o+='<h2>小智（AI）</h2><div class="card"><label class="chk"><input type="checkbox" data-act="aitog"'+(SET.ai?' checked':'')+'><span>啟用小智</span></label><label class="chk"><input type="checkbox" data-act="pvtog"'+(SET.pv!==false?' checked':'')+'><span>送出前預覽去識別後的內容（建議開啟）</span></label><details><summary class="sm">進階</summary>'+fld('s_px','中繼網址（空白＝預設）','<input id="s_px" value="'+esc(SET.proxy||'')+'" onchange="window.PCA.set(\'proxy\',this.value)">')+fld('s_mf','快速模型','<input id="s_mf" value="'+esc(SET.mFast||M_FAST)+'" onchange="window.PCA.set(\'mFast\',this.value)">')+fld('s_md','深入模型','<input id="s_md" value="'+esc(SET.mDeep||M_DEEP)+'" onchange="window.PCA.set(\'mDeep\',this.value)">')+'</details></div>';
  o+='<h2>外觀</h2><div class="card">'+fld('s_fs','字級','<select id="s_fs" onchange="window.PCA.fs(this.value)">'+['標準','大','特大','超大'].map(function(n,k){return '<option value="'+k+'"'+(k===SET.font?' selected':'')+'>'+n+'</option>';}).join('')+'</select>')+'</div>';
  o+='<h2>關於</h2><div class="card"><div>321牧會助理 v'+APPVER+'（第一階段）</div><div class="sub">先生命，再關係，後事工。讓耶穌作王，讓耶穌得著一切的榮耀。</div><div class="sub">自動更新：已啟用。有新版時，會在您鎖定或離開 App 時自動更新。</div><div style="margin-top:.6rem">'+btn('upd','立即檢查更新','sm2')+'</div><details><summary class="sm">如何加到 iPhone 主畫面</summary><div class="sm">用 Safari 開啟本頁，點下方「分享」按鈕，選「加入主畫面」。</div></details><div class="note">本工具僅為牧養輔助，不取代禱告、專業諮商、醫療與法律意見。</div></div>';
  o+='<div style="margin-top:1.5rem">'+btn('wipe','清除全部資料','dng blk')+'</div>';return o;}
@@ -391,6 +431,8 @@ function deid(t){var n=0,list=[],i,m,s;
  for(i=0;i<list.length;i++)if(t.indexOf(list[i][0])>=0){t=t.split(list[i][0]).join(list[i][1]);n++;}
  t=t.replace(/[\w.+-]+@[\w-]+\.[\w.-]+/g,function(){n++;return '[電郵已移除]';});
  t=t.replace(/https?:\/\/\S+/g,function(){n++;return '[網址已移除]';});
+ t=t.replace(/[\u4e00-\u9fa5]{1,6}[縣市][\u4e00-\u9fa5]{1,6}[區鄉鎮市][\u4e00-\u9fa5\d]{0,16}[路街巷弄道][\d\-之段巷弄號樓\u4e00-\u9fa5]{0,14}/g,function(){n++;return '[地址已移除]';});
+ t=t.replace(/[\u4e00-\u9fa5]{1,8}[路街][\d]{1,4}(?:巷\d{1,3})?(?:弄\d{1,3})?號/g,function(){n++;return '[地址已移除]';});
  t=t.replace(/[A-Z][12]\d{8}/g,function(){n++;return '[證號已移除]';});
  t=t.replace(/\+?\d[\d\s\-]{5,}\d/g,function(x){if(/^\d{4}-\d{1,2}-\d{1,2}$/.test(x))return x;n++;return '[數字已移除]';});
  return {t:t,n:n};}
@@ -410,7 +452,10 @@ function aiCall(msgs,model,max,cb){var url=SET.proxy||PROXY,tries=0,dl=[900,1800
   .then(function(d){cb(null,d);})
   .catch(function(e){clearTimeout(to);if(tries<dl.length){setTimeout(go,dl[tries++]);}else cb(e);});}
  go();}
-function sendChat(){if(busy)return;var ta=$('cin'),txt=ta?ta.value.trim():'';if(!txt)return;
+function pvOpen(txt){var r=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt),raw=r?r[2]:txt,d=deid(raw);
+ openSheet('送出前確認','<div class="sm">以下是即將送給小智的內容。已替換或移除 <b>'+d.n+'</b> 處（會友姓名→會友甲乙…，電話、電郵、網址、證號、地址）。</div><pre class="pv" style="white-space:pre-wrap;word-break:break-word;background:var(--bg);border:1px solid var(--line);border-radius:.6rem;padding:.7rem;margin:.6rem 0;max-height:40vh;overflow:auto">'+esc(d.t)+'</pre><div class="note warn">名單以外的人名、學校、公司、地點不會自動遮蔽。若有，請按「回去修改」改掉再送。</div><div class="row" style="margin-top:.8rem">'+btn('pvgo','確認送出','pri sm2')+' '+btn('close','回去修改','sm2')+'</div>');}
+function sendChat(go){if(busy)return;var ta=$('cin'),txt=ta?ta.value.trim():'';if(!txt)return;
+ if(go!==true&&SET.pv!==false){var rr=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt);if(rr&&!(rr[2]||'').trim()){toast('請在指令後面寫上情況');return;}pvOpen(txt);return;}
  var r=/^\/(探訪|代禱|簡訊|經文|講綱|講評|勸慰|公告|會議|會記)\s*([\s\S]*)$/.exec(txt),m={r:'u',t:txt};
  if(r){m.cmd=r[1];m.a=r[2]||'';if(!m.a.trim()){toast('請在指令後面寫上情況');return;}}
  m.n=deid(m.cmd?m.a:m.t).n;D.chat.push(m);draft='';
@@ -429,17 +474,25 @@ function sendChat(){if(busy)return;var ta=$('cin'),txt=ta?ta.value.trim():'';if(
 function paintChat(scroll){if(V.tab!=='chat'||V.sub)return;var e=$('msgs');if(!e)return;e.innerHTML=msgsHtml();fillVer();if(scroll)$('main').scrollTop=$('main').scrollHeight;}
 
 /* ---------- backup ---------- */
-function doExport(){var raw=localStorage.getItem(VKEY);flush().then(function(){raw=localStorage.getItem(VKEY);
- var b=new Blob([raw],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='pca-backup-'+today()+'.json';document.body.appendChild(a);a.click();
- setTimeout(function(){URL.revokeObjectURL(a.href);document.body.removeChild(a);},1500);toast('已匯出加密備份');});}
+function bkMark(){SET.lastBackup=today();delete SET.bkSnooze;saveSet();if(D&&(V.tab==='me'||V.tab==='today')&&!V.sub)render();}
+function doExport(){flush().then(function(){var raw=vGet();if(!raw){toast('沒有資料可備份');return;}
+ var name='pca-backup-'+today()+'.json',f=null;try{f=new File([raw],name,{type:'application/json'});}catch(e){}
+ function dl(){var b=new Blob([raw],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);document.body.removeChild(a);},1500);bkMark();toast('已匯出加密備份');}
+ if(f&&navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){
+  navigator.share({files:[f],title:'牧會助理加密備份'}).then(function(){bkMark();toast('已分享加密備份');},function(e){if(e&&e.name==='AbortError')return;dl();});}
+ else dl();});}
+function bkDays(){if(!SET.lastBackup)return 999;return Math.floor((Date.parse(today())-Date.parse(SET.lastBackup))/864e5);}
+function bkCard(){if(!D.members.length&&!D.cares.length)return '';if(SET.bkSnooze&&SET.bkSnooze>today())return '';var d=bkDays();if(d<7)return '';
+ return '<div class="card" style="border-color:var(--warn)"><b>該備份了</b><div class="sub">'+(SET.lastBackup?'距離上次備份已 '+d+' 天。':'還沒有備份過。')+'手機遺失或損壞，資料就無法找回。備份檔是加密的，可存到「檔案」、iCloud，或傳給自己。</div><div class="row" style="margin-top:.6rem">'+btn('export','現在備份','pri sm2')+' '+btn('bksnooze','3 天後再提醒','sm2')+'</div></div>';}
 function doImport(file){var fr=new FileReader();fr.onload=function(){var o;try{o=JSON.parse(fr.result);}catch(e){}
  if(!o||!o.salt||!o.iv||!o.ct){toast('這不是有效的備份檔');return;}
  if(!confirm('匯入會取代目前這支手機上的所有資料，確定嗎？\n匯入後需用備份當時的密碼解鎖。'))return;
- localStorage.setItem(VKEY,fr.result);D=null;KEY=null;renderLock();toast('已匯入，請用備份的密碼解鎖');};fr.readAsText(file);}
+ vSet(fr.result);D=null;KEY=null;renderLock();toast('已匯入，請用備份的密碼解鎖');};fr.readAsText(file);}
 function changePw(){openSheet('更改密碼',fld('o_pw','目前密碼','<input id="o_pw" type="password">')+fld('n_pw','新密碼（至少 6 個字元）','<input id="n_pw" type="password">')+fld('n_pw2','再輸入一次','<input id="n_pw2" type="password">')+'<div class="note warn" id="cperr"></div><div style="margin-top:1rem">'+btn('dochpw','更改','pri blk')+'</div>');}
 function doChPw(){var o=$('o_pw').value,n=$('n_pw').value,n2=$('n_pw2').value,e=$('cperr');
  if(n.length<6){e.textContent='新密碼至少 6 個字元';return;}if(n!==n2){e.textContent='兩次輸入不一致';return;}
- decVault(localStorage.getItem(VKEY),o).then(function(){var s=crypto.getRandomValues(new Uint8Array(16));return deriveKey(n,s).then(function(k){SALT=s;KEY=k;return encData();});}).then(function(){closeSheet();toast('密碼已更改，請記牢');},function(){e.textContent='目前密碼不正確';});}
+ decVault(vGet(),o).then(function(){var s=crypto.getRandomValues(new Uint8Array(16));return deriveKey(n,s,ITER).then(function(k){SALT=s;KEY=k;IT=ITER;return encData();});}).then(function(){closeSheet();toast('密碼已更改，請記牢');},function(){e.textContent='目前密碼不正確';});}
 
 /* ---------- actions ---------- */
 function val(id){var e=$(id);return e?e.value:'';}
@@ -449,8 +502,8 @@ back:function(){V.sub=null;V.id=null;render();},
 close:function(){closeSheet();},
 lock:function(){lockNow();},
 setup:function(){doSetup();},unlock:function(){doUnlock();},
-wipe0:function(){if(confirm('這會清除這支手機上的所有牧會資料，無法復原。確定嗎？')){localStorage.removeItem(VKEY);D=null;KEY=null;renderLock();}},
-wipe:function(){if(confirm('清除全部資料，無法復原。確定嗎？')&&confirm('再確認一次：真的要全部清除嗎？')){localStorage.removeItem(VKEY);D=null;KEY=null;renderLock();}},
+wipe0:function(){if(confirm('這會清除這支手機上的所有牧會資料，無法復原。確定嗎？')){vDel();D=null;KEY=null;renderLock();}},
+wipe:function(){if(confirm('清除全部資料，無法復原。確定嗎？')&&confirm('再確認一次：真的要全部清除嗎？')){vDel();D=null;KEY=null;renderLock();}},
 alone:function(){var t=today();if(!D.days[t])D.days[t]={};D.days[t].alone=!D.days[t].alone;save();toast(D.days[t].alone?'願今天與主同行':'已取消');},
 addm:function(){memberSheet('');},
 editm:function(el){memberSheet(el.getAttribute('data-id'));},
@@ -483,7 +536,7 @@ clrchat:function(){if(!confirm('清除所有對話？'))return;D.chat=[];save();
 copy:function(el){var m=D.chat[+el.getAttribute('data-i')];if(!m)return;var t=m.t;
  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(function(){toast('已複製');},function(){toast('無法複製');});else toast('無法複製');},
 chpw:function(){changePw();},dochpw:function(){doChPw();},
-export:function(){doExport();},import:function(){$('impf').click();},
+export:function(){doExport();},bksnooze:function(){SET.bkSnooze=addDays(3);saveSet();render();},pvtog:function(){SET.pv=(SET.pv===false);saveSet();render();},pvgo:function(){closeSheet();sendChat(true);},import:function(){$('impf').click();},
 addsm:function(){var m={id:uid(),title:'',date:addDays(7),ref:'',done:[]};D.sermons.push(m);save();V.sub='sermon';V.id=m.id;render();},
 sermon:function(el){V.sub='sermon';V.id=el.getAttribute('data-id');render();},
 sstage:function(el){var m=getS(el.getAttribute('data-id')),k=+el.getAttribute('data-k');m.done=m.done||[];var i=m.done.indexOf(k);if(i>=0)m.done.splice(i,1);else m.done.push(k);save();},
@@ -537,7 +590,7 @@ try{if(location.search.indexOf('u=')>=0)history.replaceState(null,'',location.pa
 /* ---------- boot ---------- */
 function boot(){SET=loadSet();applyFont();
  if(!window.crypto||!crypto.subtle){document.body.className='locked';$('main').innerHTML='<div class="lock"><div class="logo">⚠️</div><h1>無法啟動</h1><div class="sub">此瀏覽器或網址不支援加密功能，請改用 https 網址（或 Safari／Chrome 新版）開啟。</div></div>';return;}
- renderLock();
+ storeInit().then(renderLock,renderLock);
  if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(function(){});}catch(e){}}
  setTimeout(function(){checkUpdate(false);},3000);setInterval(function(){checkUpdate(false);},600000);}
 document.addEventListener('keydown',function(e){if(e.key==='Enter'){var t=e.target;if(t&&t.id==='pw')doUnlock();else if(t&&(t.id==='pw1'||t.id==='pw2'))doSetup();}});
