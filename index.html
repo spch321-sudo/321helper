@@ -65,7 +65,7 @@ label.chk{display:flex;gap:.6rem;align-items:center}label.chk input{width:1.3rem
 .note{font-size:.76rem;color:var(--sub);margin-top:.4rem}
 .cmds{display:flex;gap:.4rem;overflow-x:auto;padding:.3rem 0}.cmds button{flex:none}
 .cbar{position:sticky;bottom:0;background:var(--bg);padding:.4rem 0 .6rem}
-.appg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0}.appc{display:flex;flex-direction:column;gap:.15rem;background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:.7rem .8rem;color:inherit;text-decoration:none}.appi{width:2.3rem;height:2.3rem;border-radius:.6rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:.2rem}.appn{font-weight:700}.chip.cn{align-self:flex-start;background:#e3f1e3;color:#2e6b2e}
+.appg{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin:.5rem 0}.appc{display:flex;flex-direction:column;gap:.15rem;background:var(--card);border:1px solid var(--line);border-radius:.9rem;padding:.7rem .8rem;color:inherit;text-decoration:none}.appi{width:2.3rem;height:2.3rem;border-radius:.6rem;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;margin-bottom:.2rem}.appn{font-weight:700}.appfold{margin-top:12px}.appfold>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:10px 14px;border:1px dashed var(--line);border-radius:14px;background:var(--card);color:var(--brand);font-weight:700;font-size:.95rem}.appfold>summary::-webkit-details-marker{display:none}.appfold>summary::after{content:"▾"}.appfold[open]>summary::after{content:"▴"}.appfold>summary .le{display:none}.appfold[open]>summary .mo{display:none}.appfold[open]>summary .le{display:inline}.appfold[open]>summary{margin-bottom:12px}
 .warn{color:var(--warn)}.ok{color:var(--ok)}
 .step{display:flex;gap:.6rem;padding:.45rem 0;align-items:flex-start}.step input{width:1.3rem;height:1.3rem;margin-top:.2rem;flex:none}
 .vs{border-left:3px solid var(--gold);padding:.1rem .7rem;margin:.5rem 0}.vs b{color:var(--gold)}
@@ -86,7 +86,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.7.0';
+var APPVER='1.7.1';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -467,19 +467,22 @@ function msgsHtml(){var o='',i,m;if(!D.chat.length)o='<div class="sub">您好，
 /* ---------- App tab ---------- */
 var BASE='https://spch321-sudo.github.io/';
 var APPS=[
- ['讀經與靈修',1,[['晨讀321','每日晨讀靈修（繁體）','chendu321/','晨'],['晨讀321 简体','每日晨读灵修','chendu321-cn/','晨'],['晨讀321 EN','Morning devotion (English)','chendu321-en/','M'],['321互動聖經','朗讀、畫線、小智陪讀','bible/','經'],['落實321','把321理念活出來','321/','實'],['321每日得勝','每日規劃與得勝操練','321planner/','勝']]],
- ['生活操練',1,[['321生命操練','每日舊人／新人操練','321life/','命'],['321健康新生活','NEW START 健康生活','321healthylife/','康'],['321屬靈生活','與主連結的日常','321spirituallife/','靈'],['321家庭生活','家庭中的321','321familylife/','家'],['321婚姻生活','夫妻同行','321marriagelife/','婚'],['321職場生活','職場得勝','321worklife/','職'],['321教會生活','教會與小家','321churchlife/','教'],['321社交生活','關係與人際','321sociallife/','交']]],
- ['靈修與團契',0,[['國度321空中團契','聚會、最新消息與奉獻','321fellowship/','團'],['321舊約導讀','逐章舊約導讀','321ot/','舊'],['321靈修會主','新約靈修會主文稿','321devotion/','修']]]];
-var AITOOLS=[['Kimi','月之暗面 AI 助手','https://www.kimi.com/',1],['ChatGPT','OpenAI AI 助手','https://chatgpt.com/',0],['DeepSeek','深度求索 AI 助手','https://chat.deepseek.com/',1],['Claude','Anthropic AI 助手','https://claude.ai/',0],['豆包','字節跳動 AI 助手','https://www.doubao.com/',1],['Gemini','Google AI 助手','https://gemini.google.com/',0]];
-function appCard(n,sub,url,ic,cn){return '<a class="appc" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><span class="appi">'+esc(ic)+'</span><span class="appn">'+esc(n)+' ↗</span><span class="sm">'+esc(sub)+'</span>'+(cn?'<span class="chip cn">中國可用</span>':'')+'</a>';}
-function vApp(){var o='<h1>App</h1><div class="sub">321 的各個 App 與外部 AI 工具。點一下會用瀏覽器開啟。</div>',i,j,g,a;
- for(i=0;i<APPS.length;i++){g=APPS[i];o+='<h2>'+esc(g[0])+'</h2>';
-  if(!g[1])o+='<details><summary class="sm">展開（'+g[2].length+' 個）</summary>';
-  o+='<div class="appg">';for(j=0;j<g[2].length;j++){a=g[2][j];o+=appCard(a[0],a[1],BASE+a[2],a[3],0);}o+='</div>';
-  if(!g[1])o+='</details>';}
- o+='<h2>AI 工具</h2><div class="sub">外部的 AI 助手，可幫忙讀長文、整理資料、預備信息。</div><div class="note warn">這些是外部網站，不在牧會助理的保護範圍內。請不要貼上會友的姓名、電話、住址或敏感紀錄；需要時，請先自行去識別。</div><div class="appg">';
- for(i=0;i<AITOOLS.length;i++){a=AITOOLS[i];o+=appCard(a[0],a[1],a[2],a[0].charAt(0),a[3]);}
- return o+'</div><div class="note">「中國可用」是一般情況下的標示，各地網路環境不同，請以實際為準。</div>';}
+ ['讀經與靈修',2,[['晨讀321','每日晨讀靈修（繁體）','chendu321/','晨'],['321互動聖經','朗讀、畫線、小智陪讀','bible/','經'],['晨讀321 简体','每日晨读灵修','chendu321-cn/','晨'],['晨讀321 EN','Morning devotion (English)','chendu321-en/','M'],['落實321','把321理念活出來','321/','實'],['321每日得勝','每日規劃與得勝操練','321planner/','勝']]],
+ ['321靈修生活',2,[['321心靈快餐','每日短篇靈修','321soul/','餐'],['321真理點心','每日真理小品','321truth/','點'],['321舊約導讀','逐章舊約導讀','321ot/','舊'],['321靈修會主','新約靈修會主文稿','321devotion/','修']]],
+ ['321生活操練',2,[['321生命操練','每日舊人／新人操練','321life/','命'],['321健康新生活','NEW START 健康生活','321healthylife/','康'],['321屬靈生活','與主連結的日常','321spirituallife/','靈'],['321家庭生活','家庭中的321','321familylife/','家'],['321婚姻生活','夫妻同行','321marriagelife/','婚'],['321職場生活','職場得勝','321worklife/','職'],['321教會生活','教會與小家','321churchlife/','教'],['321社交生活','關係與人際','321sociallife/','交']]],
+ ['國度321空中團契',1,[['國度321空中團契','聚會、最新消息與奉獻','321fellowship/','團']]]];
+var AITOOLS=[['Kimi','月之暗面 AI 助手','https://www.kimi.com/'],['ChatGPT','OpenAI AI 助手','https://chatgpt.com/'],['DeepSeek','深度求索 AI 助手','https://chat.deepseek.com/'],['Claude','Anthropic AI 助手','https://claude.ai/'],['豆包','字節跳動 AI 助手','https://www.doubao.com/'],['Gemini','Google AI 助手','https://gemini.google.com/']];
+var APPFOLD={};try{APPFOLD=JSON.parse(localStorage.getItem('pca_appfold')||'{}')||{};}catch(e){APPFOLD={};}
+function appCard(n,sub,url,ic){return '<a class="appc" href="'+esc(url)+'" target="_blank" rel="noopener noreferrer"><span class="appi">'+esc(ic)+'</span><span class="appn">'+esc(n)+' ↗</span><span class="sm">'+esc(sub)+'</span></a>';}
+function appCards(items){var o='<div class="appg">',i,a;for(i=0;i<items.length;i++){a=items[i];o+=appCard(a[0],a[1],a[2],a[3]);}return o+'</div>';}
+function appSec(k,items,keep){var first=items.slice(0,keep),rest=items.slice(keep),o=first.length?appCards(first):'';if(!rest.length)return o;
+ var more=first.length?'展開其它 '+rest.length+' 個':'展開全部 '+rest.length+' 個';
+ return o+'<details class="appfold" data-fold="'+esc(k)+'"'+(APPFOLD[k]?' open':'')+'><summary><span class="mo">'+esc(more)+'</span><span class="le">收合</span></summary>'+appCards(rest)+'</details>';}
+document.addEventListener('toggle',function(e){var d=e.target;if(!d||!d.classList||!d.classList.contains('appfold'))return;APPFOLD[d.getAttribute('data-fold')]=d.open?1:0;try{localStorage.setItem('pca_appfold',JSON.stringify(APPFOLD));}catch(x){}},true);
+function vApp(){var o='<h1>App</h1><div class="sub">321 的各個 App 與外部 AI 工具。點一下會用瀏覽器開啟。</div>',i,j,g,items,ai=[];
+ for(i=0;i<APPS.length;i++){g=APPS[i];items=[];for(j=0;j<g[2].length;j++)items.push([g[2][j][0],g[2][j][1],BASE+g[2][j][2],g[2][j][3]]);o+='<h2>'+esc(g[0])+'</h2>'+appSec('g'+i,items,g[1]);}
+ for(i=0;i<AITOOLS.length;i++)ai.push([AITOOLS[i][0],AITOOLS[i][1],AITOOLS[i][2],AITOOLS[i][0].charAt(0)]);
+ return o+'<h2>AI 工具</h2><div class="sub">外部的 AI 助手，可幫忙讀長文、整理資料、預備信息。點一下會用瀏覽器開啟：</div><div class="note warn">這些是外部網站，不在牧會助理的保護範圍內。請不要貼上會友的姓名、電話、住址或敏感紀錄；需要時，請先自行去識別。</div>'+appSec('ai',ai,0);}
 function vMe(){var o='<h1>我</h1>',t=today(),mc=0,i;for(i=0;i<D.cares.length;i++)if(D.cares[i].date.slice(0,7)===t.slice(0,7))mc++;
  o+='<div class="card"><div class="grid2"><div><div class="big">'+D.members.length+'</div><div class="sm">羊群人數</div></div><div><div class="big">'+mc+'</div><div class="sm">本月關懷紀錄</div></div></div></div>';
  o+='<h2>基本</h2><div class="card">'+fld('s_pn','稱呼（問安時使用）','<input id="s_pn" value="'+esc(D.set.pname||'')+'" onchange="window.PCA.pn(this.value)">')+'</div>';
