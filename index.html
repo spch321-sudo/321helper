@@ -89,7 +89,7 @@ details{margin:.5rem 0}.ver{margin-top:.5rem}.ver summary{font-size:.85rem}.ver 
 <script>
 (function(){
 'use strict';
-var APPVER='1.10.2';
+var APPVER='1.10.3';
 var VKEY='pca_vault_v1',SKEY='pca_set_v1';
 var PROXY='https://xiaozhi-proxy.spch321.workers.dev';
 var M_FAST='claude-haiku-5-5',M_DEEP='claude-sonnet-5-5';
@@ -392,31 +392,74 @@ function slGo(){slRead();var src=(SL.src||'').trim();if(src.length<4){toast('請
     P.write({outputType:'blob'}).then(function(bl){SL.blob=bl;SL.name=safeName(j.title||SL.title||'投影片','.pptx');SL.busy=false;slPaint();toast('投影片完成');},function(){fail('投影片檔案產生失敗，請再試一次。');});
    }catch(e){fail('投影片檔案產生失敗，請再試一次。');}});},'你忠實整理內容成投影片，只回傳 JSON。');}
 /* 製作卡片 */
-var CDT=[['bday','生日快樂','🎂'],['xmas','聖誕快樂','🎄'],['easter','復活節快樂','✝️'],['ny','新年蒙福','🧧'],['thx','感謝你','🙏'],['care','願主安慰你','🕊'],['plain','願主賜福','✨']];
-var CDP=[['藍夜',['#123F92','#071A42'],'#F2ECDD','#D4A65B'],['暖陽',['#F8E3B0','#E9B872'],'#4A3216','#8A5F12'],['玫瑰',['#FBE4E9','#E9A9B8'],'#5B2433','#A33A55'],['晨綠',['#E3F0E1','#9CC9A0'],'#1F4A2A','#2D7A4B']];
-var CD={t:'bday',p:0,to:'',txt:'',vs:'',from:''};
-function cdHtml(){var o='<i id="cdmk"></i>',i;
- o+='<div class="row" style="flex-wrap:wrap;gap:.35rem">';for(i=0;i<CDT.length;i++)o+=btn('cdtype',CDT[i][2]+' '+CDT[i][1],(CD.t===CDT[i][0]?'pri ':'')+'sm2','data-k="'+CDT[i][0]+'"');o+='</div>';
- o+='<div class="row" style="flex-wrap:wrap;gap:.35rem;margin-top:.4rem">';for(i=0;i<CDP.length;i++)o+=btn('cdtpl',CDP[i][0],(CD.p===i?'pri ':'')+'sm2','data-k="'+i+'"');o+='</div>';
- o+='<canvas id="cdcv" width="1080" height="1350" class="cdcv"></canvas>';
- o+='<div class="fld"><label for="cd_to">稱呼（可不填）</label><input id="cd_to" oninput="window.PCA.cd()" value="'+esc(CD.to)+'"></div><div class="fld"><label for="cd_vs">經文（可不填，例如：民數記 6:24-26）</label><input id="cd_vs" oninput="window.PCA.cd()" value="'+esc(CD.vs)+'"></div><div class="fld"><label for="cd_tx">祝福的話</label><textarea id="cd_tx" rows="4" oninput="window.PCA.cd()">'+esc(CD.txt)+'</textarea></div><div class="row">'+btn('cdwrite','✍️ 請小智寫祝福','sm2')+'</div><div class="fld"><label for="cd_fr">署名</label><input id="cd_fr" oninput="window.PCA.cd()" value="'+esc(CD.from||(D.set&&D.set.pname)||'')+'"></div><div class="note">卡片只在手機上畫出來，不會上傳。稱呼若是會友姓名，請求小智寫祝福時會自動換成代號。</div><div class="row" style="margin-top:.4rem">'+btn('cdshare','分享／存圖','pri sm2')+' '+btn('cddl','下載圖片','sm2')+'</div>';
+var CDT=[['bday','生日快樂','🎂'],['xmas','聖誕快樂','🎄'],['easter','復活節快樂','✝️'],['ny','新年蒙福','🧧'],['thx','感謝你','🙏'],['care','願主安慰你','🕊'],['plain','願主賜福','✨'],['none','不加標題','']];
+var CDP={navy:['藍夜',['#123F92','#0D3988','#071A42'],'rgba(212,166,91,.30)','#F2ECDD','#F7EFDC','#D4A65B','#BBA98A','rgba(212,166,91,.42)'],
+ paper:['米紙',['#FBF8F1','#F4EFE3','#EDE6D6'],'rgba(212,166,91,.45)','#3A3122','#23211C','#A9762F','#8A7C63','rgba(169,118,47,.34)'],
+ dawn:['晨曦',['#FFF6EC','#FBE9D2','#F6D9B8'],'rgba(255,214,150,.6)','#3A2A1A','#8A4B16','#C97A22','#8A6A4A','rgba(181,101,29,.30)'],
+ grace:['恩典綠',['#F2F7F1','#E4EFE6','#D6E7DA'],'rgba(160,200,170,.5)','#1C2E26','#255943','#3C8A64','#5C7A6A','rgba(46,106,80,.28)'],
+ rose:['玫瑰',['#FCF5F3','#F6E7E3','#EFD8D2'],'rgba(220,160,150,.45)','#33221E','#8A3D2E','#B36A54','#8A6A62','rgba(154,74,58,.28)'],
+ sky:['天空',['#F1F7FB','#DFEEF6','#CFE4F0'],'rgba(150,200,230,.5)','#1B2A33','#1E5270','#2E7DA0','#5A7684','rgba(37,96,128,.28)'],
+ linen:['亞麻',['#F7F4EE','#EFEAE0','#E6DFD2'],'rgba(200,190,170,.4)','#2A2620','#4A4234','#8A7A5A','#7A7263','rgba(90,80,64,.26)'],
+ night:['夜林',['#101E1B','#16302A','#0E2420'],'rgba(232,201,122,.26)','#EDEAE0','#E8C97A','#E8C97A','#9FB0AA','rgba(232,201,122,.34)'],
+ plain:['純白',['#FFFFFF','#FFFFFF','#FFFFFF'],'rgba(0,0,0,0)','#23211C','#0D3988','#A9762F','#6B6255','rgba(13,57,136,.22)']};
+var CDPO=['navy','paper','dawn','grace','rose','sky','linen','night','plain'];
+var CDS={p:[1080,1920,'9:16'],t:[1080,1350,'4:5'],s:[1080,1080,'1:1'],w:[1920,1080,'16:9']};
+var CDB=[['classic','經典'],['corner','四角'],['inline','內線'],['dots','點點'],['ornate','花飾'],['none','無']];
+var CDF=[[.9,'小'],[1,'標準'],[1.2,'大'],[1.45,'特大'],[1.7,'超大']];
+var CDQ=[['風景','landscape'],['日出','sunrise'],['天空','sky'],['海','ocean'],['山','mountain'],['花','flowers'],['光','light rays'],['樹','tree'],['教堂','church'],['小路','path'],['麥田','wheat field'],['水','calm water'],['雲','clouds'],['晨霧','morning mist'],['星空','starry sky'],['十字架','cross'],['手','hands together'],['餐桌','family table']];
+var PXKEY='ofCQ7i2mqaEddrACvvmzdgfrpZ90Z8gVOI9D6vYVf7uxWXCCtzQbj9yR';
+var CD={t:'bday',tpl:'navy',size:'t',bd:'classic',fs:1,to:'',v:'',vs:'',txt:'',top:'',from:''},CDIMG=null,CDBY='',CDV='',CDPX={q:'',page:1,items:[],busy:false,end:false};
+function cdRow(act,list,cur,key){var o='<div class="row" style="flex-wrap:wrap;gap:.35rem;margin-top:.4rem">',i;for(i=0;i<list.length;i++)o+=btn(act,list[i][1],(String(cur)===String(list[i][0])?'pri ':'')+'sm2','data-k="'+list[i][0]+'"');return o+'</div>';}
+function cdHtml(){var o='<i id="cdmk"></i>',i,pl=[],tl=[],sz=[];if(CDV==='px')return cdPxHtml();
+ for(i=0;i<CDT.length;i++)tl.push([CDT[i][0],(CDT[i][2]?CDT[i][2]+' ':'')+CDT[i][1]]);
+ for(i=0;i<CDPO.length;i++)pl.push([CDPO[i],CDP[CDPO[i]][0]]);
+ for(var k in CDS)if(CDS.hasOwnProperty(k))sz.push([k,CDS[k][2]]);
+ o+=cdRow('cdtype',tl,CD.t)+'<canvas id="cdcv" width="1080" height="1350" class="cdcv"></canvas>';
+ o+='<div class="note">版型</div>'+cdRow('cdtpl',pl,CD.tpl)+'<div class="note">尺寸</div>'+cdRow('cdsize',sz,CD.size)+'<div class="note">外框</div>'+cdRow('cdbd',CDB,CD.bd)+'<div class="note">文字大小</div>'+cdRow('cdfs',CDF,CD.fs);
+ o+='<div class="note">相片背景</div><div class="row" style="flex-wrap:wrap;gap:.35rem">'+btn('cdphoto','📷 選相片','sm2')+btn('cdpx','🖼 圖庫找圖','sm2')+(CDIMG?btn('cdnophoto','移除相片','sm2'):'')+'<input type="file" id="cd_file" accept="image/*" style="display:none"></div>';
+ o+='<div class="fld"><label for="cd_top">上方文字（教會或團契名，可不填）</label><input id="cd_top" oninput="window.PCA.cd()" value="'+esc(CD.top)+'"></div><div class="fld"><label for="cd_to">稱呼（可不填）</label><input id="cd_to" oninput="window.PCA.cd()" value="'+esc(CD.to)+'"></div><div class="fld"><label for="cd_v">經文內容（可不填，請自行核對和合本）</label><textarea id="cd_v" rows="2" oninput="window.PCA.cd()">'+esc(CD.v)+'</textarea></div><div class="fld"><label for="cd_vs">出處（例如：民數記 6:24-26）</label><input id="cd_vs" oninput="window.PCA.cd()" value="'+esc(CD.vs)+'"></div><div class="fld"><label for="cd_tx">祝福的話</label><textarea id="cd_tx" rows="4" oninput="window.PCA.cd()">'+esc(CD.txt)+'</textarea></div><div class="row" style="flex-wrap:wrap;gap:.35rem">'+btn('cdwrite','✍️ 請小智寫祝福','sm2')+btn('cdimp','✨ 改一改','sm2')+'</div><div class="fld"><label for="cd_fr">署名</label><input id="cd_fr" oninput="window.PCA.cd()" value="'+esc(CD.from||(D.set&&D.set.pname)||'')+'"></div><div class="note">卡片只在手機上畫出來，不會上傳。從圖庫找圖時，只會把搜尋字詞送到 Pexels。稱呼若是會友姓名，請小智寫祝福時會自動換成代號。</div><div class="row" style="margin-top:.4rem">'+btn('cdshare','分享／存圖','pri sm2')+' '+btn('cddl','下載圖片','sm2')+'</div>';
  return o;}
-function cdRead(){var a=$('cd_to'),b=$('cd_vs'),c=$('cd_tx'),d=$('cd_fr');if(a)CD.to=a.value;if(b)CD.vs=b.value;if(c)CD.txt=c.value;if(d)CD.from=d.value;}
-function cdSheet(){openSheet('🎨 製作卡片',cdHtml());setTimeout(cdDraw,0);}
-function cdWrap(cx,text,maxW){var out=[],ps=String(text||'').split('\n'),i,line,j,ch,NS='，。、；：？！）」』】》〉·…—％,.;:?!)';for(var p=0;p<ps.length;p++){line='';for(i=0;i<ps[p].length;i++){ch=ps[p].charAt(i);if(cx.measureText(line+ch).width>maxW&&line){if(NS.indexOf(ch)>=0){line+=ch;out.push(line);line='';continue;}out.push(line);line='';}line+=ch;}out.push(line);}
- return out;}
-function cdDraw(){var cv=$('cdcv');if(!cv)return;var cx=cv.getContext('2d'),W=1080,H=1350,P=CDP[CD.p],T=null,i,g;for(i=0;i<CDT.length;i++)if(CDT[i][0]===CD.t)T=CDT[i];
- g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,P[1][0]);g.addColorStop(1,P[1][1]);cx.fillStyle=g;cx.fillRect(0,0,W,H);
- cx.strokeStyle=P[3];cx.lineWidth=4;cx.strokeRect(50,50,W-100,H-100);cx.lineWidth=1.5;cx.strokeRect(68,68,W-136,H-136);
- var F='"Noto Serif TC","Songti TC","PMingLiU",Georgia,serif';cx.textAlign='center';cx.textBaseline='alphabetic';
- cx.font='110px '+F;cx.fillStyle=P[3];cx.fillText(T[2],W/2,230);
- cx.font='bold 96px '+F;cx.fillStyle=P[2];cx.fillText(T[1],W/2,360);
- var y=450;if(CD.to.trim()){cx.font='46px '+F;cx.fillStyle=P[2];cx.fillText(CD.to.trim().slice(0,20)+(/[一-鿿]/.test(CD.to)?' 平安':''),W/2,y);y+=80;}
- var vs=CD.vs.trim();if(vs){cx.font='italic 36px '+F;cx.fillStyle=P[3];cx.fillText('— '+vs.slice(0,30)+' —',W/2,y);y+=70;}
- var body=CD.txt.trim(),sz=50,lines,maxH=H-y-230;
- if(body){while(sz>26){cx.font=sz+'px '+F;lines=cdWrap(cx,body,W-260);if(lines.length*sz*1.55<=maxH)break;sz-=2;}cx.font=sz+'px '+F;lines=cdWrap(cx,body,W-260);cx.fillStyle=P[2];for(i=0;i<lines.length;i++)cx.fillText(lines[i],W/2,y+i*sz*1.55+sz);}
- var fr=(CD.from||(D.set&&D.set.pname)||'').trim();if(fr){cx.font='44px '+F;cx.fillStyle=P[3];cx.fillText(fr.slice(0,24),W/2,H-130);}}
 function cdBlob(cb){var cv=$('cdcv');if(!cv){cb(null);return;}try{cv.toBlob(function(b){cb(b);},'image/png');}catch(e){cb(null);}}
+function cdPxHtml(){var o='<i id="cdmk"></i><div class="row" style="gap:.35rem"><input id="cd_pq" value="'+esc(CDPX.q)+'" placeholder="英文關鍵字，例如 sunrise" style="flex:1;min-width:0">'+btn('cdpxgo','搜尋','sm2')+btn('cdback','返回','sm2')+'</div><div class="row" style="flex-wrap:wrap;gap:.35rem;margin-top:.4rem">',i;
+ for(i=0;i<CDQ.length;i++)o+=btn('cdpxq',CDQ[i][0],'sm2','data-q="'+esc(CDQ[i][1])+'"');o+='</div><div id="cd_grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.35rem;margin-top:.5rem"></div><div class="row" style="margin-top:.4rem">'+btn('cdpxmore','載入更多','sm2')+'</div><div class="note">圖片來自 Pexels 免費圖庫，選用後卡片下方會註明攝影師。</div>';return o;}
+function cdRead(){var m={cd_to:'to',cd_v:'v',cd_vs:'vs',cd_tx:'txt',cd_fr:'from',cd_top:'top'},k,e;for(k in m)if(m.hasOwnProperty(k)){e=$(k);if(e)CD[m[k]]=e.value;}}
+function cdSheet(){openSheet('🎨 製作卡片',cdHtml());setTimeout(function(){var f=$('cd_file');if(f)f.onchange=cdFile;if(CDV==='px')cdPxPaint();else cdDraw();},0);}
+function cdFile(){var f=this.files&&this.files[0];if(!f)return;var rd=new FileReader();rd.onload=function(){var im=new Image();im.onload=function(){CDIMG=im;CDBY='';cdRead();cdSheet();};im.onerror=function(){toast('這張相片讀不進來');};im.src=rd.result;};rd.readAsDataURL(f);}
+function cdPxPaint(){var g=$('cd_grid');if(!g)return;if(!CDPX.items.length){g.innerHTML='<div class="note" style="grid-column:1/-1">'+(CDPX.busy?'載入中…':'沒有找到圖片')+'</div>';return;}var h='',i,p;for(i=0;i<CDPX.items.length;i++){p=CDPX.items[i];h+='<button data-act="cdpxpick" data-i="'+i+'" style="padding:0;border:0;background:none"><img src="'+esc(p.src&&(p.src.tiny||p.src.small)||'')+'" alt="" loading="lazy" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:.5rem"></button>';}g.innerHTML=h;}
+function cdPxRun(reset){if(CDPX.busy)return;CDPX.busy=true;if(reset){CDPX.page=1;CDPX.items=[];CDPX.end=false;}cdPxPaint();var q=(CDPX.q||'').replace(/^\s+|\s+$/g,''),o=CD.size==='w'?'landscape':(CD.size==='s'?'square':'portrait'),url=(q?'https://api.pexels.com/v1/search?query='+encodeURIComponent(q)+'&orientation='+o+'&':'https://api.pexels.com/v1/curated?')+'per_page=24&page='+CDPX.page;
+ fetch(url,{headers:{Authorization:PXKEY}}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(function(d){var got=d.photos||[];CDPX.items=CDPX.items.concat(got);CDPX.end=got.length<24;CDPX.page++;CDPX.busy=false;cdPxPaint();})['catch'](function(){CDPX.busy=false;toast('圖庫連不上，請稍後再試');cdPxPaint();});}
+function cdWrap(cx,text,maxW){var out=[],ps=String(text||'').split('\n'),i,line,ch,NS='，。、；：？！）」』】》〉·…—％,.;:?!)',NE='（「『【《〈',cy;for(var p=0;p<ps.length;p++){line='';for(i=0;i<ps[p].length;i++){ch=ps[p].charAt(i);if(cx.measureText(line+ch).width>maxW&&line){if(NS.indexOf(ch)>=0){line+=ch;continue;}cy='';while(line.length>1&&NE.indexOf(line.charAt(line.length-1))>=0){cy=line.charAt(line.length-1)+cy;line=line.slice(0,-1);}out.push(line);line=cy+ch;continue;}line+=ch;}out.push(line);}
+ return out;}
+function cdRr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function cdBorder(c,W,H,pad,F,P){var B=CD.bd;if(B==='none')return;var ln=P[7],ln2=ln.replace(/[\d.]+\)$/,'0.55)'),gd=P[5],m=pad*.5,x=m,y=m,w=W-m*2,h=H-m*2,R=Math.round(18*F),L,o,px,py,i,pts;
+ function arc(a,b,r){c.beginPath();c.arc(a,b,r,0,7);c.fill();}
+ if(B==='classic'){c.strokeStyle=ln;c.lineWidth=Math.max(2,W*.0022);cdRr(c,x,y,w,h,R);c.stroke();c.strokeStyle=ln2;c.lineWidth=Math.max(1,W*.0009);cdRr(c,x+9*F,y+9*F,w-18*F,h-18*F,Math.round(12*F));c.stroke();c.fillStyle=gd;pts=[[x,y],[x+w,y],[x,y+h],[x+w,y+h]];for(i=0;i<4;i++)arc(pts[i][0],pts[i][1],Math.round(5*F));}
+ else if(B==='corner'||B==='ornate'){if(B==='ornate'){c.strokeStyle=ln;c.lineWidth=Math.max(2,W*.0022);cdRr(c,x,y,w,h,R);c.stroke();}c.strokeStyle=gd;c.lineWidth=Math.max(2,W*.003);c.lineCap='round';L=Math.round((B==='corner'?56:34)*F);o=B==='corner'?0:Math.round(16*F);pts=[[x,y,1,1],[x+w,y,-1,1],[x,y+h,1,-1],[x+w,y+h,-1,-1]];c.fillStyle=gd;for(i=0;i<4;i++){px=pts[i][0]+pts[i][2]*o;py=pts[i][1]+pts[i][3]*o;c.beginPath();c.moveTo(px,py);c.lineTo(px+pts[i][2]*L,py);c.moveTo(px,py);c.lineTo(px,py+pts[i][3]*L);c.stroke();if(B==='ornate')arc(px,py,Math.round(4.5*F));}c.lineCap='butt';}
+ else if(B==='inline'){c.strokeStyle=ln2;c.lineWidth=Math.max(1,W*.0013);cdRr(c,x+6*F,y+6*F,w-12*F,h-12*F,Math.round(14*F));c.stroke();}
+ else if(B==='dots'){c.fillStyle=ln2;var r0=Math.max(2,W*.0026),gap=Math.round(26*F),ex=x+6*F,ey=y+6*F,ew=w-12*F,eh=h-12*F;for(px=ex;px<=ex+ew;px+=gap){arc(px,ey,r0);arc(px,ey+eh,r0);}for(py=ey;py<=ey+eh;py+=gap){arc(ex,py,r0);arc(ex+ew,py,r0);}}}
+function cdDraw(){var cv=$('cdcv');if(!cv)return;var Z=CDS[CD.size]||CDS.t,W=Z[0],H=Z[1];cv.width=W;cv.height=H;var c=cv.getContext('2d'),P=CDP[CD.tpl]||CDP.navy,F=W/1080,pad=Math.round(W*.085),iw=W-pad*2,FB=Math.min(1.8,Math.max(.85,+CD.fs||1)),T=null,i,g,y;
+ var SF='"Noto Serif TC","Songti TC","PMingLiU",Georgia,serif',SS='"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+ for(i=0;i<CDT.length;i++)if(CDT[i][0]===CD.t)T=CDT[i];
+ g=c.createLinearGradient(0,0,W*.3,H);g.addColorStop(0,P[1][0]);g.addColorStop(.55,P[1][1]);g.addColorStop(1,P[1][2]);c.fillStyle=g;c.fillRect(0,0,W,H);
+ if(CDIMG){var ir=CDIMG.width/CDIMG.height,rr=W/H,sw,sh;if(ir>rr){sh=CDIMG.height;sw=sh*rr;}else{sw=CDIMG.width;sh=sw/rr;}c.drawImage(CDIMG,(CDIMG.width-sw)/2,(CDIMG.height-sh)/2,sw,sh,0,0,W,H);var hx=P[1][1].replace('#',''),rgb='rgba('+parseInt(hx.slice(0,2),16)+','+parseInt(hx.slice(2,4),16)+','+parseInt(hx.slice(4,6),16)+',',sc=c.createLinearGradient(0,0,0,H);sc.addColorStop(0,rgb+'0.46)');sc.addColorStop(.5,rgb+'0.66)');sc.addColorStop(1,rgb+'0.56)');c.fillStyle=sc;c.fillRect(0,0,W,H);}
+ var rg=c.createRadialGradient(W*.84,H*.10,10,W*.84,H*.10,W*.75);rg.addColorStop(0,P[2]);rg.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=rg;c.fillRect(0,0,W,H);
+ cdBorder(c,W,H,pad,F,P);c.textAlign='center';c.textBaseline='alphabetic';
+ y=pad+Math.round(30*F);var top=(CD.top||'').replace(/^\s+|\s+$/g,'');
+ if(top){var gs=Math.round(30*F*FB);while(gs>Math.round(16*F)){c.font='600 '+gs+'px '+SS;if(c.measureText(top).width<=iw-80*F)break;gs-=2;}c.fillStyle=P[6];c.fillText(top,W/2,y+gs);y+=gs+Math.round(20*F);}
+ if(T&&T[0]!=='none'){c.fillStyle=P[5];c.font=Math.round(88*F)+'px '+SF;if(T[2]){y+=Math.round(80*F);c.fillText(T[2],W/2,y);y+=Math.round(24*F);}var hs=Math.round(84*F*Math.min(1.25,FB));while(hs>Math.round(36*F)){c.font='bold '+hs+'px '+SF;if(c.measureText(T[1]).width<=iw)break;hs-=3;}c.fillStyle=P[4];c.fillText(T[1],W/2,y+hs);y+=hs+Math.round(30*F);}
+ var to=(CD.to||'').replace(/^\s+|\s+$/g,'');if(to){var ts=Math.round(40*F*FB);c.fillStyle=P[3];while(ts>Math.round(22*F)){c.font='600 '+ts+'px '+SF;if(c.measureText(to).width<=iw)break;ts-=2;}c.fillText(to+(/[一-鿿]/.test(to)&&to.length<=6&&!/平安$/.test(to)?' 平安':''),W/2,y+ts);y+=ts+Math.round(36*F);}
+ var fr=(CD.from||(D.set&&D.set.pname)||'').replace(/^\s+|\s+$/g,''),fz=Math.round(32*F*FB),bot=H-pad*.72-Math.round(18*F),room=bot-(fr?fz+Math.round(40*F):Math.round(20*F))-y;
+ var v=(CD.v||'').replace(/^\s+|\s+$/g,'').replace(/\s+/g,'').replace(/[，、；：,;]+$/,''),vs=(CD.vs||'').replace(/^\s+|\s+$/g,''),note=(CD.txt||'').replace(/^\s+|\s+$/g,''),vz=Math.round(54*F*FB),vl=[],nz=Math.round(40*F*FB),nl=[],tot;
+ if(v)v=(/^[「『]/.test(v)?'':'「')+v+(/[」』]$/.test(v)?'':'」');
+ function lay(){if(v){while(true){c.font='600 '+vz+'px '+SF;vl=cdWrap(c,v,iw);if(vl.length<=7||vz<=Math.round(26*F))break;vz-=Math.round(3*F);}}
+  if(note){while(true){c.font=nz+'px '+SS;nl=cdWrap(c,note,iw);tot=(v?vl.length*vz*1.52+(vs?vz*.9:0)+Math.round(50*F):0)+nl.length*nz*1.7;if(tot<=room||nz<=Math.round(20*F))break;nz-=Math.round(2*F);}}
+  tot=(v?vl.length*vz*1.52+(vs?Math.round(46*F):0)+(note?Math.round(50*F):0):0)+(note?nl.length*nz*1.7:0);}
+ lay();var yy=y+Math.max(0,(room-tot)/2);
+ if(v){c.fillStyle=P[4];c.font='600 '+vz+'px '+SF;yy+=vz*.9;for(i=0;i<vl.length;i++){c.fillText(vl[i],W/2,yy);yy+=vz*1.52;}if(vs){c.font=Math.round(30*F)+'px '+SS;c.fillStyle=P[4];c.fillText('— '+vs+' —',W/2,yy);yy+=Math.round(46*F);}if(note){c.fillStyle=P[5];c.beginPath();c.arc(W/2,yy,Math.round(5*F),0,7);c.fill();c.strokeStyle=P[5];c.lineWidth=2.5*F;c.beginPath();c.moveTo(W/2-52*F,yy);c.lineTo(W/2-16*F,yy);c.moveTo(W/2+16*F,yy);c.lineTo(W/2+52*F,yy);c.stroke();yy+=Math.round(40*F);}}
+ else if(!v&&vs&&!note){c.font=Math.round(32*F)+'px '+SS;c.fillStyle=P[4];c.fillText('— '+vs+' —',W/2,yy+40*F);}
+ if(note){c.fillStyle=P[3];c.font=nz+'px '+SS;yy+=nz;for(i=0;i<nl.length;i++){c.fillText(nl[i],W/2,yy);yy+=nz*1.7;}}
+ if(fr){var ss=fz;while(ss>Math.round(15*F)){c.font='600 '+ss+'px '+SS;if(c.measureText(fr).width<=iw)break;ss-=2;}c.fillStyle=P[6];c.fillText(fr,W/2,bot);}
+ if(CDBY){c.font=Math.round(16*F)+'px '+SS;c.globalAlpha=.7;c.fillStyle=P[6];c.fillText('Photo: '+CDBY+' / Pexels',W/2,H-pad*.38);c.globalAlpha=1;}}
 var SYS='你是「小智」，台灣貴格會一位牧者的牧會助理。你是 AI，不是牧者、醫師、心理師或律師。以321理念為底：耶穌是我的榜樣，聖經是我的準則，聖靈是我的引導；先生命、再關係、後事工；不論斷、不貼標籤、不替人下屬靈評價。一律用繁體中文，語氣溫和、簡明、可直接使用。引用聖經只用和合本並寫出出處；不確定時直說「我不確定」，絕不編造經文、人名、數據或法規。對話中的「會友甲、乙…」是代號，請原樣使用，不要猜測真實身分。涉及自傷、受虐、嚴重精神困擾、法律或醫療時，提醒牧者轉介專業人員，並提醒不要讓當事人獨處。你不替任何人傳送訊息，只提供草稿讓牧者修改。基督徒有不同看法的議題，請公平並陳。不替聖靈說話，不保證神的旨意。行政、公文、法規與會議類內容保持專業語氣，不插入靈修用語；321理念只在牧養與勸勉類回覆中自然出現。格式：短標題與條列，不用表格與程式碼。';
 var CRISIS_RE=/自殺|輕生|不想活|想死|結束生命|了結自己|活不下去|傷害自己|自傷|割腕|跳樓|尋短|不想活了|活著沒意思|活著沒有意思|想消失|不如死了|一了百了|吞藥|燒炭|上吊|跳海|了斷|suicid|kill myself|end my life|want to die|self-harm/i;
 var ABUSE_RE=/家暴|毆打|性侵|性騷擾|猥褻|虐待|施暴|暴力相向|亂倫|兒虐|被打得|身上有傷|abuse|rape/i;
@@ -917,9 +960,13 @@ mtldl:function(el){var id=el.getAttribute('data-id'),L=D.tools||[],i;for(i=0;i<L
 slopen:function(){if(!SL.busy){SL.blob=null;SL.err='';}openSheet('📽 製作投影片',slHtml());},
 slmine:function(){slRead();var i;for(i=D.chat.length-1;i>=0;i--)if(D.chat[i].r==='a'&&D.chat[i].raw&&!D.chat[i].err){SL.src=D.chat[i].raw;break;}slPaint();},
 slgo:function(){slGo();},slshare:function(){if(SL.blob)fileOut(SL.blob,SL.name);},sldl:function(){if(SL.blob)dlBlob(SL.blob,SL.name);},slagain:function(){SL.blob=null;SL.src='';SL.title='';slPaint();},
-cdopen:function(){cdSheet();},cdtype:function(el){cdRead();CD.t=el.getAttribute('data-k');cdSheet();},cdtpl:function(el){cdRead();CD.p=+el.getAttribute('data-k');cdSheet();},
+cdopen:function(){CDV='';cdSheet();},cdtype:function(el){cdRead();CD.t=el.getAttribute('data-k');cdChip(el);},cdtpl:function(el){cdRead();CD.tpl=el.getAttribute('data-k');cdChip(el);},cdsize:function(el){cdRead();CD.size=el.getAttribute('data-k');cdChip(el);},cdbd:function(el){cdRead();CD.bd=el.getAttribute('data-k');cdChip(el);},cdfs:function(el){cdRead();CD.fs=+el.getAttribute('data-k');cdChip(el);},
+cdphoto:function(){var f=$('cd_file');if(f)f.click();},cdnophoto:function(){cdRead();CDIMG=null;CDBY='';cdSheet();},cdpx:function(){cdRead();CDV='px';cdSheet();cdPxRun(true);},cdback:function(){CDV='';cdSheet();},cdpxgo:function(){var e=$('cd_pq');CDPX.q=e?e.value:'';cdPxRun(true);},cdpxq:function(el){CDPX.q=el.getAttribute('data-q');var e=$('cd_pq');if(e)e.value=CDPX.q;cdPxRun(true);},cdpxmore:function(){if(!CDPX.end)cdPxRun(false);},
+cdpxpick:function(el){var p=CDPX.items[+el.getAttribute('data-i')];if(!p)return;toast('載入相片…');var u=p.src&&(p.src.large2x||p.src.large||p.src.original);fetch(u).then(function(r){return r.blob();}).then(function(b){var im=new Image();im.onload=function(){CDIMG=im;CDBY=p.photographer||'';CDV='';cdSheet();toast('已選用這張相片');};im.onerror=function(){toast('這張相片讀不進來');};im.src=URL.createObjectURL(b);})['catch'](function(){toast('相片下載失敗');});},
+cdimp:function(){cdRead();if(!CD.txt.replace(/\s/g,'')){toast('先寫一段，或請小智寫一段再來改');return;}var o=['短一點','長一點','更溫暖','口語一點','更有力','換個說法'],i,h='';for(i=0;i<o.length;i++)h+=btn('cdimp2',o[i],'sm2','data-k="'+o[i]+'"');var e=$('cd_tx');if(e&&!$('cd_imp')){var d=document.createElement('div');d.id='cd_imp';d.className='row';d.style.cssText='flex-wrap:wrap;gap:.35rem;margin:.3rem 0';d.innerHTML=h;e.parentNode.appendChild(d);}},
+cdimp2:function(el){cdRead();var how=el.getAttribute('data-k');toast('小智正在改…');aiCall([{role:'user',content:'請把這段卡片祝福改得「'+how+'」，用繁體中文，結尾只用「阿們」，只輸出改好的內容，不要標題、引號：\n'+deid(CD.txt).t}],M_FAST,500,function(err,d){var t=err?'':String(extract(d)||'').replace(/[*#>`]/g,'').replace(/^[「"]|[」"]$/g,'').trim();if(!t){toast('改不出來，請再試一次');return;}CD.txt=unlabel(t).replace(/奉[主]?耶穌[基督]*的名[禱祈][告求]*[，,、]?\s*/g,'');cdSheet();});},
 cdwrite:function(){cdRead();var T=null,i;for(i=0;i<CDT.length;i++)if(CDT[i][0]===CD.t)T=CDT[i];
- var ask='請為「'+T[1]+'」卡片寫一段祝福的話，80 字內，溫暖、口語、不說教，用繁體中文。'+(CD.to.trim()?'這張卡是寫給「'+deid(CD.to).t+'」的，請直接對他說話，但不要再寫一次稱呼。':'')+(CD.vs.trim()?'卡片上另有經文 '+CD.vs.trim()+'，不要重抄經文。':'')+'結尾只用「阿們」，不要寫「奉主耶穌的名禱告」。只輸出祝福的話本身，不要標題、引號。';
+ var ask='請為「'+(T[0]==='none'?'一般':T[1])+'」卡片寫一段祝福的話，80 字內，溫暖、口語、不說教，用繁體中文。'+(CD.to.trim()?'這張卡是寫給「'+deid(CD.to).t+'」的，請直接對他說話，但不要再寫一次稱呼。':'')+(CD.vs.trim()?'卡片上另有經文 '+CD.vs.trim()+(CD.v.trim()?'（經文已印在卡上，不要重抄）':'')+'，':'')+'結尾只用「阿們」，不要寫「奉主耶穌的名禱告」。只輸出祝福的話本身，不要標題、引號。';
  toast('小智正在寫…');aiCall([{role:'user',content:ask}],M_FAST,500,function(err,d){var t=err?'':String(extract(d)||'').replace(/[*#>`]/g,'').replace(/^[「"]|[」"]$/g,'').trim();
   if(!t){toast('寫不出來，請再試一次');return;}CD.txt=unlabel(t).replace(/奉[主]?耶穌[基督]*的名[禱祈][告求]*[，,、]?\s*/g,'');if($('cdmk'))cdSheet();});},
 cdshare:function(){cdRead();cdDraw();cdBlob(function(b){if(!b){toast('圖片產生失敗');return;}fileOut(b,safeName('卡片','.png'));});},
@@ -964,6 +1011,7 @@ document.addEventListener('input',function(e){if(e.target&&e.target.id==='cin')d
 document.addEventListener('visibilitychange',function(){if(document.hidden){hiddenAt=Date.now();if(D)flush();if(upAvail&&idleNow()){var tr='';try{tr=sessionStorage.getItem('pca_try');}catch(e){}if(!tr)applyUpdate();}}
  else{if(D&&hiddenAt&&Date.now()-hiddenAt>SET.lockMin*60000)lockNow();hiddenAt=0;checkUpdate(false);}});
 window.addEventListener('pagehide',function(){if(D)flush();});
+function cdChip(el){var p=el.parentNode,b=p.children,i;for(i=0;i<b.length;i++)b[i].className=b[i].className.replace(/\bpri\s*/,'');el.className='pri '+el.className;cdDraw();}
 window.PCA={cd:function(){cdRead();cdDraw();},mt:function(k,v){var m=getMt(V.id);if(m){m[k]=v;save();}},sv:function(k,v){var m=getS(V.id);if(m){m[k]=v;save();}},flist:function(){var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gb:function(v){GB=v;var e=$('flist');if(e&&D)e.innerHTML=flistHtml(val('q'));},gs:function(){var e=$('gres');if(e&&D)e.innerHTML=gsHtml(val('gq'));},
  ex:function(i,v){var r=dayRec(today());if(!r.ex)r.ex=['','',''];r.ex[i]=v;save();toast('已儲存');},
  exqs:function(i,v){SET.exq=SET.exq||['','',''];SET.exq[i]=v.trim();saveSet();toast('已儲存');},

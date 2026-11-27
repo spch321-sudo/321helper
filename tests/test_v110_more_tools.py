@@ -1,4 +1,4 @@
-import os
+import json, os
 ROOT=os.path.abspath(os.path.join(os.path.dirname(__file__),'..'))
 import re, json, subprocess, time
 from playwright.sync_api import sync_playwright
@@ -15,10 +15,16 @@ try:
         st='end_turn'
         if '請做這個小工具' in c or '請依下面的要求修改' in c: t=HTML
         elif '投影片' in c and 'JSON' in c: t=json.dumps({'title':'住在主裡','subtitle':'約翰福音 15','slides':[{'t':'主旨','p':['住在主裡','結果子']},{'t':'經文','p':[],'v':'我是葡萄樹','r':'約翰福音 15:5'},{'t':'禱告','p':['求主幫助我們']}]})
-        elif '祝福的話' in c: t='願主賜福你，阿們'
+        elif '祝福的話' in c or '卡片祝福' in c: t='願主賜福你，阿們'
         else: t='小智的回答。'
         r.fulfill(status=200,content_type='application/json',headers={'access-control-allow-origin':'*'},body=json.dumps({'content':[{'text':t}],'stop_reason':st}))
     pg.route(re.compile(r'https://[^/]+\.workers\.dev.*'),route)
+    PNG=open('/tmp/ph.png','rb').read()
+    def pxr(r):
+        if 'api.pexels.com' in r.request.url:
+            r.fulfill(status=200,headers={'access-control-allow-origin':'*','content-type':'application/json'},body=json.dumps({"photos":[{"photographer":"Tester","src":{"tiny":"https://images.pexels.com/t.png","large2x":"https://images.pexels.com/l.png"}}]}))
+        else: r.fulfill(status=200,headers={'access-control-allow-origin':'*','content-type':'image/png'},body=PNG)
+    pg.route(re.compile(r'https://(api|images)\.pexels\.com/.*'),pxr)
     pg.goto('http://localhost:8776/index.html')
     pg.fill('#pw1','pastor123');pg.fill('#pw2','pastor123');pg.check('#ack');pg.click('[data-act=setup]');pg.wait_for_selector('.sc');pg.click('.sc [data-act=close]')
     pg.click('#tabs [data-t=chat]');pg.click('[data-act=aion]');pg.wait_for_selector('#cin')
@@ -55,7 +61,17 @@ try:
     z=zipfile.ZipFile(path);assert any(n.startswith('ppt/slides/slide') for n in z.namelist()) and len([n for n in z.namelist() if re.match(r'ppt/slides/slide\d+\.xml',n)])==4
     # card
     box();pg.click('[data-act=cdopen]');pg.wait_for_selector('#cdcv');pg.fill('#cd_to','林姊妹');pg.fill('#cd_tx','生日快樂，主祝福你。')
-    pg.click('[data-act=cdtpl][data-k="2"]');assert pg.input_value('#cd_to')=='林姊妹'
+    pg.click('[data-act=cdtpl][data-k="rose"]');assert pg.input_value('#cd_to')=='林姊妹'
+    assert pg.locator('[data-act=cdtpl]').count()==9 and pg.locator('[data-act=cdbd]').count()==6 and pg.locator('[data-act=cdsize]').count()==4 and pg.locator('[data-act=cdfs]').count()==5
+    pg.click('[data-act=cdsize][data-k="p"]');assert pg.evaluate("[document.getElementById('cdcv').width,document.getElementById('cdcv').height]")==[1080,1920]
+    pg.click('[data-act=cdsize][data-k="w"]');assert pg.evaluate("document.getElementById('cdcv').width")==1920
+    pg.click('[data-act=cdbd][data-k="ornate"]');pg.click('[data-act=cdfs][data-k="1.45"]');pg.click('[data-act=cdsize][data-k="t"]')
+    pg.fill('#cd_v','願耶和華賜福給你，保護你。');pg.fill('#cd_vs','民數記 6:24')
+    pg.set_input_files('#cd_file','/tmp/ph.png');pg.wait_for_selector('[data-act=cdnophoto]')
+    assert pg.input_value('#cd_v')=='願耶和華賜福給你，保護你。'
+    pg.click('[data-act=cdpx]');pg.wait_for_selector('[data-act=cdpxpick]');pg.click('[data-act=cdpxpick]');pg.wait_for_selector('[data-act=cdnophoto]')
+    pg.click('[data-act=cdimp]');pg.click('[data-act=cdimp2][data-k="更溫暖"]');pg.wait_for_function("document.getElementById('cd_tx').value.indexOf('願主賜福')>=0")
+    pg.fill('#cd_tx','生日快樂，主祝福你。')
     pg.click('[data-act=cdwrite]');pg.wait_for_function("document.getElementById('cd_tx').value.indexOf('願主賜福')>=0")
     pg.screenshot(path='/tmp/card.png')
     with pg.expect_download() as d3: pg.click('[data-act=cddl]')
